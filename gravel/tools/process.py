@@ -71,6 +71,44 @@ def climbs(d, z, dip=15.0, min_gain=40.0):
     return res
 
 
+HARD_GAIN, HARD_GRADE = 250.0, 8.0
+
+
+def find_climbs(d, z, dip=15.0):
+    """ClimbPro-szerű emelkedő-felismerés: helyi minimumtól a csúcsig, max. `dip` (vagy a
+    nyereség 10%-a) visszaeséssel; legalább 30 m szint, 400 m hossz és 3% átlag."""
+    res = []; i = 0; n = len(z)
+    while i < n - 1:
+        while i < n - 1 and z[i + 1] <= z[i]: i += 1
+        s = top = j = i
+        while j < n - 1:
+            j += 1
+            if z[j] > z[top]: top = j
+            elif z[top] - z[j] > max(dip, 0.1 * (z[top] - z[s])): break
+        gain = z[top] - z[s]; L = d[top] - d[s]
+        if gain >= 30 and L >= 400 and gain / L >= 0.03:
+            res.append((s, top))
+        i = top + 1 if top > s else j
+    out = []
+    for k, (s, e) in enumerate(res, 1):
+        L = d[e] - d[s]; gain = z[e] - z[s]; avg = gain / L * 100
+        # max meredekség 300 m-es ablakban (a 30 m-es DEM zaja miatt nem rövidebben)
+        mx = 0.0; j = s
+        for a in range(s, e):
+            while j < e and d[j] - d[a] < 300: j += 1
+            if d[j] - d[a] >= 250: mx = max(mx, (z[j] - z[a]) / (d[j] - d[a]) * 100)
+        why = []
+        if gain >= HARD_GAIN: why.append('hosszú')
+        if avg >= HARD_GRADE and gain >= 50: why.append('meredek')
+        steps = np.arange(d[s], d[e] + 1e-6, 100.0)
+        if steps[-1] < d[e]: steps = np.r_[steps, d[e]]
+        prof = np.interp(steps, d[s:e + 1], z[s:e + 1])
+        out.append(dict(n=k, s=round(d[s] / 1000, 2), e=round(d[e] / 1000, 2), len=round(L / 1000, 2), gain=int(round(gain)),
+                        avg=round(avg, 1), max=round(max(mx, avg), 1), bot=int(z[s]), top=int(z[e]), hard=bool(why), why=why,
+                        prof=[int(round(v)) for v in prof]))
+    return out
+
+
 def steepest(d, z, win=500.0):
     best = (0, 0); j = 0
     for i in range(len(d)):
@@ -123,8 +161,9 @@ for R in ROUTES:
     zr = elev(pts[:, 0], pts[:, 1])
     z = smooth(zr, d, 200.0)
     up, dn = ascent(z, 4.0)
-    cl = climbs(d, z)
-    longest = max(cl, key=lambda c: c['gain']) if cl else None
+    climbs_list = find_climbs(d, z)
+    lc = max(climbs_list, key=lambda c: c['gain']) if climbs_list else None
+    longest = dict(start=lc['s'] * 1000, len=lc['len'] * 1000, gain=lc['gain'], grade=lc['avg']) if lc else None
     st_g, st_at = steepest(d, z)
     surf = collections.Counter()
     for c, L in zip(cats, seglen): surf[c] += L
@@ -195,6 +234,7 @@ for R in ROUTES:
              timeH=round(t_h, 2), difficulty=diff, score=round(score, 1), halfday=bool(halfday), loop=bool(loop),
              gravel=gravel_pct, surface=surfpct, surfBands=sb,
              longestClimb=dict(km=round(longest['start'] / 1000, 1), len=round(longest['len'] / 1000, 1), gain=int(longest['gain']), grade=round(longest['grade'], 1)) if longest else None,
+             climbs=climbs_list, hardClimbs=sum(c['hard'] for c in climbs_list),
              steepest=dict(grade=round(st_g, 1), km=round(st_at / 1000, 1)),
              hotelKm=round(hotel_d, 1), fromHotel=bool(hotel_d <= 3),
              starts=starts, highlights=hl, warn=R['warn'], photos=R['photos'],

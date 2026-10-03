@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="Bad Reichenhall gravel – saját gravel-router (OSM/Overture + SRTM)" xmlns="http://www.topografix.com/GPX/1/1">
-<metadata><name>Loferer Alm és a Vorderkaserklamm</name><desc>GENERÁLT NYOMVONAL – Loferből a Loferer Alm hegyi útján kapaszkodsz fel a Loferer Steinberge alatti almvidékre (≈1300 m), majd vissza a völgybe, és St. Martinon át a Vorderkaserklamm szurdokához tekersz egy kiadós völgyi kitérőre. Rövid, de szintes.</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-03T21:21:12Z</time></metadata>
+<metadata><name>Loferer Alm és a Vorderkaserklamm</name><desc>GENERÁLT NYOMVONAL – Loferből a Loferer Alm hegyi útján kapaszkodsz fel a Loferer Steinberge alatti almvidékre (≈1300 m), majd vissza a völgybe, és St. Martinon át a Vorderkaserklamm szurdokához tekersz egy kiadós völgyi kitérőre. Rövid, de szintes.</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-03T21:47:36Z</time></metadata>
 <wpt lat="47.5868" lon="12.695"><name>Lofer</name><type>town</type></wpt>
 <wpt lat="47.608" lon="12.656"><name>Loferer Alm (≈1350 m)</name><type>hut</type></wpt>
 <wpt lat="47.5678" lon="12.7049"><name>St. Martin bei Lofer</name><type>town</type></wpt>
