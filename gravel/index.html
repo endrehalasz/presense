@@ -329,12 +329,14 @@ input[type=range]{width:100%;accent-color:var(--glow)}
 </div></div>
 
 <script src="lib/leaflet/leaflet.js"></script>
-<script src="data.js"></script>
-<script src="basemap.js"></script>
+<script src="data.js?v=20261003-5"></script>
+<script src="basemap.js?v=20261003-5"></script>
 <script>
 (function(){
 'use strict';
 const D = window.GRAVEL, R = D.routes;
+R.forEach(r => { r.climbs = Array.isArray(r.climbs) ? r.climbs : []; r.hardClimbs = r.hardClimbs || r.climbs.filter(c => c.hard).length; r.highlights = r.highlights || []; r.starts = r.starts || []; r.warn = r.warn || []; r.photos = r.photos || []; r.surfBands = r.surfBands || []; });
+const safe = (f, fb = '') => { try { return f(); } catch(e){ console.error(e); return fb; } };
 const $ = s => document.querySelector(s);
 const fmt = (n, d=1) => Number(n).toLocaleString('hu-HU', {minimumFractionDigits:d, maximumFractionDigits:d});
 const fmt0 = n => Math.round(n).toLocaleString('hu-HU');
@@ -483,7 +485,7 @@ function pass(r){
   if (F.start.size){ const modes = new Set(r.starts.map(s => s.mode)); for (const m of F.start) if (!modes.has(m)) return false; }
   return r.km <= F.km && r.up <= F.up && r.gravel >= F.gr;
 }
-const sorters = {rating:(a,b)=>b.rating-a.rating||a.km-b.km, km:(a,b)=>a.km-b.km, up:(a,b)=>a.up-b.up, gravel:(a,b)=>b.gravel-a.gravel, hotel:(a,b)=>a.hotelKm-b.hotelKm||a.km-b.km, name:(a,b)=>a.name.localeCompare(b.name,'hu'), wx:(a,b)=>wxScore(a)-wxScore(b)||b.rating-a.rating};
+const sorters = {rating:(a,b)=>b.rating-a.rating||a.km-b.km, km:(a,b)=>a.km-b.km, up:(a,b)=>a.up-b.up, gravel:(a,b)=>b.gravel-a.gravel, hotel:(a,b)=>a.hotelKm-b.hotelKm||a.km-b.km, name:(a,b)=>a.name.localeCompare(b.name,'hu'), wx:(a,b)=>safe(()=>wxScore(a)-wxScore(b),0)||b.rating-a.rating};
 function sbarHTML(s){ return `<div class="sbar">${SURF.map(([k,,v]) => s[k] > 0 ? `<i style="width:${s[k]}%;background:var(${v})" title="${k}"></i>` : '').join('')}</div>`; }
 function startIcons(r){ return r.starts.map(s => ({hotel:'🏨', car:'🚗', train:'🚆'})[s.mode]).join(' '); }
 function apply(){
@@ -503,7 +505,7 @@ function apply(){
         <span class="badge gen" title="Saját gravel-routerrel, OSM-utakon generálva">generált nyomvonal</span>
         <span class="badge" title="Indulási módok">${startIcons(r)}</span>
         ${r.climbs.length ? `<span class="badge" title="Emelkedők (nehéz: 250+ m szint vagy 8%+ átlag)" style="${r.hardClimbs?'color:var(--hard);border-color:color-mix(in srgb,var(--hard) 45%,var(--line))':''}">⛰ ${r.climbs.length} emelkedő${r.hardClimbs?` · ${r.hardClimbs} nehéz`:''}</span>` : ''}
-        ${wxBadge(r)}
+        ${safe(() => wxBadge(r))}
       </div>
       <div class="meta"><span>${fmt(r.km)} km</span><span>↑ ${fmt0(r.up)} m</span><span>⏱ ${hTime(r.timeH)}</span><span>▲ ${fmt0(r.maxEle)} m</span><span>murva ${fmt0(r.gravel)}%</span></div>
       <div style="margin-top:8px">${sbarHTML(r.surface)}</div>
@@ -579,7 +581,7 @@ function renderDetail(r){
       <div class="stat"><small>Szállodától</small><b>${fmt(r.hotelKm)}<span>km</span></b><em>${r.fromHotel?'szállodából indítható':'a start távolsága'}</em></div>
     </div>
     <h4 id="wxh">Időjárás és indulási javaslat</h4>
-    <div class="wxbox" id="wxbox">${wxDetailHTML(r)}</div>
+    <div class="wxbox" id="wxbox">${safe(() => wxDetailHTML(r), '<p class="wxnote">Az időjárás most nem jeleníthető meg.</p>')}</div>
     <h4>Burkolat</h4>
     <div class="surface">${sbarHTML(r.surface)}
       <div class="slegend">${SURF.map(([k,l,v]) => `<span><i style="background:var(${v})"></i>${l} <b>${fmt(r.surface[k])}%</b></span>`).join('')}</div></div>
@@ -592,7 +594,7 @@ function renderDetail(r){
       <div class="stat"><small>Legmeredekebb 500 m</small><b>${fmt(sp.grade)}<span>%</span></b><em>${fmt(sp.km)}. km-nél</em></div>
     </div>
     <h4>Emelkedők (ClimbPro)</h4>
-    <div id="climbs">${climbsHTML(r)}</div>
+    <div id="climbs">${safe(() => climbsHTML(r))}</div>
     <h4>Kiemelt pontok</h4>
     <ul class="hls">${r.highlights.map((h,i) => `<li data-i="${i}"><span class="ic" style="color:${HLCOL[h.type]||'#555'}">${ICON[h.type]||''}</span><span>${esc(h.name)}</span><span class="km">${fmt(h.km)} km</span></li>`).join('')}</ul>
     <h4>Indulási lehetőségek</h4>
@@ -618,7 +620,7 @@ function renderDetail(r){
   detail.classList.add('open'); $('.mapwrap').classList.add('dopen'); $('.mapwrap').classList.remove('dhidden');
   $('#dclose').onclick = closeDetail;
   detail.querySelectorAll('.hls li').forEach(li => li.onclick = () => { const h = r.highlights[+li.dataset.i]; map.flyTo([h.lat,h.lon], 14, {duration:.5}); if (innerWidth<=860){ detail.classList.remove('open'); $('.mapwrap').classList.add('dhidden'); scrollTo({top:0}); } });
-  bindWxDays(); bindClimbs(r);
+  safe(bindWxDays); safe(() => bindClimbs(r));
   detail.querySelector('.dbody').scrollTop = 0;
   requestAnimationFrame(() => { setupProfile(r); });
   loadPhotos(r);
@@ -873,7 +875,7 @@ async function loadWeather(){
   Object.keys(_plan).forEach(k => delete _plan[k]);
   WX.loc = {}; R.forEach((r,i) => { WX.loc[r.id] = raw.slice(i*3, i*3+3); });
   WX.days = raw[0].days;
-  renderDayPick(); apply(); if (sel) refreshWxDetail();
+  renderDayPick(); safe(apply); if (sel) refreshWxDetail();
 }
 const hh = s => { const t = s.split('T')[1].split(':'); return +t[0] + (+t[1])/60; };
 const clock = h => { const m = Math.round(h*60); return String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); };
@@ -964,10 +966,10 @@ function preTrip(r, p){
   return parts.length ? '<br><small>' + parts.join('; ') + '.</small>' : '';
 }
 function bindWxDays(){ document.querySelectorAll('[data-wxday]').forEach(b => b.onclick = () => setDay(+b.dataset.wxday)); }
-function refreshWxDetail(){ const box = $('#wxbox'); if (box && sel){ box.innerHTML = wxDetailHTML(sel); bindWxDays(); } }
+function refreshWxDetail(){ const box = $('#wxbox'); if (box && sel){ box.innerHTML = safe(() => wxDetailHTML(sel)); safe(bindWxDays); } }
 window.__wxReload = () => { WX.err = null; refreshWxDetail(); loadWeather(); };
 renderDayPick();
-loadWeather();
+loadWeather().catch(e => { console.error(e); WX.err = String(e.message || e); });
 /* ---------------- indítás ---------------- */
 apply();
 const all = L.featureGroup(Object.values(lines).map(l => l.line));
