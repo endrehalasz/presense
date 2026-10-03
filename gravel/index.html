@@ -672,7 +672,7 @@ function drawProfile(){
   for (let z = Math.ceil(zmin/zstep)*zstep; z <= zmax; z += zstep){ c.beginPath(); c.moveTo(pad.l, Y(z)+.5); c.lineTo(W-pad.r, Y(z)+.5); c.stroke(); c.fillText(z, 4, Y(z)+3); }
   const kstep = total > 100 ? 20 : total > 50 ? 10 : 5;
   c.textAlign = 'center';
-  for (let k = 0; k <= total; k += kstep) c.fillText(k + (k===0?'':''), X(k), H - pad.b + 13);
+  for (let k = 0; k <= total; k += kstep) if (X(k) < W - pad.r - 22) c.fillText(k, X(k), H - pad.b + 13);
   c.textAlign = 'right'; c.fillText('km', W - pad.r, H - pad.b + 13); c.textAlign = 'left';
   // meredekség szerint színezett terület
   for (let i = 0; i < t.length-1; i++){
@@ -821,18 +821,19 @@ addEventListener('resize', () => { if (sel) document.querySelectorAll('#climbs c
 const WX = {day:0, loc:null, err:null, at:null, days:[]};
 const HU_DAYS = ['vasárnap','hétfő','kedd','szerda','csütörtök','péntek','szombat'];
 const HU_MON = ['jan.','febr.','márc.','ápr.','máj.','jún.','júl.','aug.','szept.','okt.','nov.','dec.'];
-const dayName = i => ['Ma','Holnap','Holnapután'][i];
+const DAYS = [0,1,2,3];
+const dayName = i => i < 3 ? ['Ma','Holnap','Holnapután'][i] : (d => HU_DAYS[d.getDay()][0].toUpperCase() + HU_DAYS[d.getDay()].slice(1))(dayDate(i));
 function dayDate(i){ if (WX.days[i]){ const [y,m,d] = WX.days[i].split('-').map(Number); return new Date(y, m-1, d); } const t = new Date(); t.setDate(t.getDate()+i); return t; }
 const dayLong = i => { const d = dayDate(i); return `${HU_MON[d.getMonth()]} ${d.getDate()}., ${HU_DAYS[d.getDay()]}`; };
-const savedDay = +(store.get('gr-day') || 0); WX.day = savedDay >= 0 && savedDay <= 2 ? savedDay : 0;
+const savedDay = +(store.get('gr-day') || 0); WX.day = savedDay >= 0 && savedDay <= 3 ? savedDay : 0;
 function renderDayPick(){
-  $('#daypick').innerHTML = [0,1,2].map(i => `<button class="chip" data-day="${i}" aria-pressed="${WX.day===i}">${dayName(i)} <small>${dayLong(i)}</small></button>`).join('');
+  $('#daypick').innerHTML = DAYS.map(i => `<button class="chip" data-day="${i}" aria-pressed="${WX.day===i}">${dayName(i)} <small>${dayLong(i)}</small></button>`).join('');
   document.querySelectorAll('[data-day]').forEach(b => b.onclick = () => setDay(+b.dataset.day));
 }
 function setDay(i){ WX.day = i; store.set('gr-day', String(i)); renderDayPick(); apply(); if (sel) refreshWxDetail(); }
 function wxPoints(r){ const t = r.track; let hi = 0; t.forEach((p,i) => { if (p[2] > t[hi][2]) hi = i; }); return [t[0], t[Math.floor(t.length/2)], t[hi]]; }
 async function loadWeather(){
-  const CK = 'gr-wx-v1';
+  const CK = 'gr-wx-v2';
   let cached = null; try { cached = JSON.parse(store.get(CK) || 'null'); } catch(e){}
   const fresh = cached && (Date.now() - cached.t < 60*60*1000) && cached.n === R.length;
   let raw = fresh ? cached.d : null;
@@ -840,7 +841,7 @@ async function loadWeather(){
     const pts = R.flatMap(wxPoints);
     const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + pts.map(p => p[0].toFixed(3)).join(',') + '&longitude=' + pts.map(p => p[1].toFixed(3)).join(',')
       + '&hourly=temperature_2m,precipitation_probability,precipitation,snowfall,weather_code,wind_speed_10m,wind_gusts_10m,freezing_level_height'
-      + '&daily=sunrise,sunset&timezone=Europe%2FBerlin&forecast_days=3&wind_speed_unit=kmh';
+      + '&daily=sunrise,sunset&timezone=Europe%2FBerlin&forecast_days=4&wind_speed_unit=kmh';
     try {
       const res = await fetch(u); if (!res.ok) throw new Error('HTTP ' + res.status);
       let j = await res.json(); if (!Array.isArray(j)) j = [j];
@@ -910,7 +911,7 @@ function wxDetailHTML(r){
   if (WX.err && !WX.loc) return `<p class="wxnote">Az időjárás-előrejelzés nem töltődött be (${esc(WX.err)}). Ehhez internet kell; az oldal többi része offline is működik. <button class="linkbtn" onclick="window.__wxReload()">Újrapróbálom</button></p>`;
   if (!WX.loc) return '<p class="wxnote">Előrejelzés betöltése az Open-Meteóról…</p>';
   const p = plan(r, WX.day), d = WX.day;
-  const other = [0,1,2].map(i => ({i, p:plan(r,i)}));
+  const other = DAYS.map(i => ({i, p:plan(r,i)}));
   const bestDay = other.filter(o => o.p.verdict !== 'late').sort((a,b) => (a.p.rain*4+a.p.pmax/100+a.p.snow*8) - (b.p.rain*4+b.p.pmax/100+b.p.snow*8))[0];
   let head;
   if (p.verdict === 'late') head = `<p><b class="when">Mára már késő ehhez az úthoz</b><br>Napnyugta ${clock(p.sunset)}, a túra kb. ${hTime(p.D)} óra pihenőkkel. Válaszd holnapot vagy egy rövidebb útvonalat.</p>`;
