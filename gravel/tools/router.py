@@ -21,11 +21,25 @@ def snap(lat,lon):
 EDGE={}
 for i in idx:
     e=E[i]; EDGE[(e['u'],e['v'])]=(i,False); EDGE[(e['v'],e['u'])]=(i,True)
-_pen={}
-def path(a,b,avoid=None):
-    M=A
+# „könnyű” profil (visszautakhoz): kerékpárút és kis forgalmú aszfalt előnyben, murva/ösvény, főút és emelkedő büntetve
+EASY_BASE={'cycleway':0.8,'residential':1.0,'living_street':1.1,'unclassified':1.0,'service':1.2,'track':1.25,'tertiary':1.6,'secondary':3.2,'primary':6.0,'pedestrian':2.0,'path':2.2,'footway':3.0,'bridleway':3.0,'unknown':3.0}
+EASY_CAT={'asphalt':1.0,'hard':1.25,'loose':2.0,'trail':3.5}
+def easy_cost(e):
+    f=EASY_BASE.get(e['cls'],3.0)*EASY_CAT[e['cat']]
+    if e['acc']=='designated': f*=0.75
+    if e.get('sub')=='driveway': f*=2.0
+    if e['acc'] in('private','restricted'): f*=3.0
+    return e['L']*f+9.0*e.get('climb',0)
+_A={'gravel':A}
+def matrix(profile):
+    if profile not in _A:
+        we=np.array([easy_cost(E[i]) for i in idx])
+        _A[profile]=csr_matrix((np.r_[we,we],(np.r_[u[idx],v[idx]],np.r_[v[idx],u[idx]])),shape=(n,n))
+    return _A[profile]
+def path(a,b,avoid=None,profile='gravel'):
+    M=matrix(profile)
     if avoid:
-        M=A.copy().tolil()
+        M=M.copy().tolil()
         for (p,q) in avoid: 
             M[p,q]=M[p,q]*4; M[q,p]=M[q,p]*4
         M=M.tocsr()
@@ -34,12 +48,12 @@ def path(a,b,avoid=None):
     seq=[b]
     while seq[-1]!=a: seq.append(pred[seq[-1]])
     return seq[::-1]
-def route(wps, penalize_reuse=True):
+def route(wps, penalize_reuse=True, profile='gravel', used=None):
     """wps: list of (lat,lon). returns list of edge-steps [(edge_index,reversed)] and snap info"""
     sn=[snap(*p) for p in wps]
-    steps=[]; used=set()
+    steps=[]; used=set() if used is None else used
     for (a,da),(b,db) in zip(sn[:-1],sn[1:]):
-        seq=path(a,b,avoid=used if (penalize_reuse and used) else None)
+        seq=path(a,b,avoid=used if (penalize_reuse and used) else None,profile=profile)
         for p,q in zip(seq[:-1],seq[1:]):
             steps.append(EDGE[(p,q)]); used.add((p,q))
     return steps,[d for _,d in sn]

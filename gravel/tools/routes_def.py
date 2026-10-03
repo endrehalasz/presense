@@ -230,6 +230,16 @@ dict(id="soleleitung-traunstein", name="A sólé útja – 400 éves sóvezeték
  car=None, train=("traun","Visszaút: Traunstein → Freilassing → Bad Reichenhall, kb. 60 perc, óránként (átszállás Freilassingban)."),
  warn=["A Himmelsleiter lépcsős – a track a mellette futó úton kerüli meg, de a lépcső tetején érdemes megállni.",
        BIKE_TICKET_DE]),
+# ------------------------------------------------------------------ 20b
+dict(id="soleleitung-oda-vissza", name="A sólé útja oda-vissza – Traunstein és vissza bringával", creative=True, rating=4,
+ inspired=None,
+ desc="Kreatív történelmi túra a 1619-ben épült sóvezeték (Soleleitung) nyomvonalán: a reichenhalli Alte Salinétól a Nesselgraben és az Antoniberg mentén, a Mauthäuslon át a Himmelsleiter lépcsőjéig (rövid tolás/kerülő), majd Inzellen és Siegsdorfon át Traunsteinig, a sólé egykori céljáig. Vissza is bringával, de könnyebben: Traunsteintől a Rupertiwinkel lankás, kis forgalmú útjain és kerékpárútjain Teisendorfon, Angeren és Pidingen át a szállodáig – a sóvezeték hegyes szakaszát (Mauthäusl, Inzell) nem kell még egyszer megmászni. A visszaút kb. 38 km és 300 m szint, 90% felett aszfalt, szinte végig falusi mellékutakon; különálló kerékpárút ezen a vonalon kevés van.",
+ wps=[HOTEL,(47.7232,12.8726,"Alte Saline – a sóvezeték kezdete","history"),(47.7126,12.8145,"Nesselgraben","history"),(47.7114,12.8115,"Antoniberg","history"),(47.7116,12.7850,"Mauthäusl – brunnhaus","history"),(47.7290,12.7597,"Himmelsleiter","history"),(47.7622,12.7517,"Inzell","town"),(47.7850,12.6900),(47.8220,12.6450,"Siegsdorf","town"),(47.8694,12.6390,"Traunstein – Salzmaierhaus (forduló)","history")],
+ wps_back=[(47.8493,12.8343,"Teisendorf","town"),(47.8039,12.8559,"Anger","town"),(47.7596,12.9114,"Piding","town"),HOTEL],
+ photos=["Soleleitung Bad Reichenhall Traunstein","Himmelsleiter Weißbach","Alte Saline Bad Reichenhall","Traunstein Stadtplatz"],
+ car=None, train=None,
+ warn=["Vészkijárat: ha elfáradsz, Traunsteinből vagy Teisendorfból vonattal is hazajöhetsz (Freilassingon át, 35–60 perc; kerékpárjegy kell).", "A Himmelsleiter lépcsős – a track a mellette futó úton kerüli meg, de a lépcső tetején érdemes megállni.",
+       "Hosszú nap: 9 óra előtt indulj, Traunsteinben legkésőbb 13:30-kor fordulj vissza.", "A visszaút főleg aszfalt – Teisendorf és Anger között rövid szakaszon forgalmasabb úton is haladhatsz, ott figyelj."]),
 # ------------------------------------------------------------------ 21
 dict(id="salzburg-haza", name="Vonattal Salzburgba, bringával haza (WOSSA 1 ihlette)", creative=True, rating=4,
  inspired=dict(wossa="WOSSA Etappe 1"),

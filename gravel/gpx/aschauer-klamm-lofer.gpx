@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="Bad Reichenhall gravel – saját gravel-router (OSM/Overture + SRTM)" xmlns="http://www.topografix.com/GPX/1/1">
-<metadata><name>Aschauer Klamm–Lofer</name><desc>GENERÁLT NYOMVONAL – Egész napos völgyi túra a Saalach mentén Loferig. A Saalachsee után a régi völgyi utakon Schneizlreuthba, majd a Mußbach és az Aschauer Klamm erdei útjain Melleckhez érsz, átlépsz Ausztriába, és a Tauernradweg Saalach-szakaszán Unkenen át Loferig tekersz. Visszafelé a folyó túlsó partján, ahol lehet, más úton.</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-03T20:34:31Z</time></metadata>
+<metadata><name>Aschauer Klamm–Lofer</name><desc>GENERÁLT NYOMVONAL – Egész napos völgyi túra a Saalach mentén Loferig. A Saalachsee után a régi völgyi utakon Schneizlreuthba, majd a Mußbach és az Aschauer Klamm erdei útjain Melleckhez érsz, átlépsz Ausztriába, és a Tauernradweg Saalach-szakaszán Unkenen át Loferig tekersz. Visszafelé a folyó túlsó partján, ahol lehet, más úton.</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-03T21:20:24Z</time></metadata>
 <wpt lat="47.7086" lon="12.8573"><name>Saalachsee</name><type>lake</type></wpt>
 <wpt lat="47.6905" lon="12.7999"><name>Schneizlreuth</name><type>town</type></wpt>
 <wpt lat="47.6806" lon="12.7811"><name>Mußbach-völgy</name><type>gorge</type></wpt>

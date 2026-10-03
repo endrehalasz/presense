@@ -108,6 +108,14 @@ routes_out = []
 for R in ROUTES:
     wps = [w[:2] for w in R['wps']]
     steps, snapd = router.route(wps)
+    if R.get('wps_back'):
+        # visszaút könnyű profillal; az odaúton használt éleket kerüli
+        used = set()
+        for i, rv in steps:
+            e = router.E[i]; used.add((e['u'], e['v']) if not rv else (e['v'], e['u']))
+        used |= {(q, p) for p, q in used}
+        back, snapb = router.route([wps[-1]] + [w[:2] for w in R['wps_back']], profile='easy', used=used)
+        steps += back; snapd += snapb
     pts, cats, clss, names = router.geometry(steps)
     pts, cats = densify(pts, cats)
     seglen = np.r_[0, np.hypot(np.diff(pts[:, 0]) * KY, np.diff(pts[:, 1]) * KX)]
@@ -163,7 +171,7 @@ for R in ROUTES:
     sb = [[round(a, 2), round(b, 2), c] for a, b, c in merged]
     # kiemelt pontok
     hl = []
-    for w in R['wps']:
+    for w in R['wps'] + R.get('wps_back', []):
         if len(w) >= 4:
             k = int(np.argmin((pts[:, 0] - w[0]) ** 2 * KY ** 2 + (pts[:, 1] - w[1]) ** 2 * KX ** 2))
             off = hav(pts[k], w[:2])
@@ -192,7 +200,7 @@ for R in ROUTES:
              starts=starts, highlights=hl, warn=R['warn'], photos=R['photos'],
              inspired=R.get('inspired'), generated=True, repeatPct=round(rep, 1),
              snapMax=int(max(snapd)), track=track,
-             gmaps=f"https://www.google.com/maps/dir/?api=1&origin={pts[0,0]:.5f},{pts[0,1]:.5f}&destination={pts[-1,0]:.5f},{pts[-1,1]:.5f}&travelmode=bicycling&waypoints=" + "%7C".join(f"{w[0]:.5f},{w[1]:.5f}" for w in R['wps'][1:-1][:8]))
+             gmaps=f"https://www.google.com/maps/dir/?api=1&origin={pts[0,0]:.5f},{pts[0,1]:.5f}&destination={pts[-1,0]:.5f},{pts[-1,1]:.5f}&travelmode=bicycling&waypoints=" + "%7C".join(f"{w[0]:.5f},{w[1]:.5f}" for w in (lambda l: l[::max(1, -(-len(l) // 9))])((R['wps'] + R.get('wps_back', []))[1:-1])))
     routes_out.append(r)
     print(f"{R['id']:24s} {km:6.1f} km {up:5.0f} m  max {z.max():5.0f}  gravel {gravel_pct:5.1f}%  {diff:8s} half={halfday} t={t_h:.1f}h rep={rep:.0f}% snap={max(snapd):.0f} pts={len(track)}")
 

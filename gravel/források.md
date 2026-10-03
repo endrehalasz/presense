@@ -4,7 +4,7 @@ Generálva: 2026-10-03. Minden adatot a `tools/` mappa szkriptjei töltöttek le
 
 ## Összefoglaló
 
-- **23 útvonal**, ebből **0 valódi forrás-GPX** és **23 generált nyomvonal**.
+- **24 útvonal**, ebből **0 valódi forrás-GPX** és **24 generált nyomvonal**.
 - Mindegyik nyomvonal valódi, utakat követő track: egy saját gravel-útvonaltervező (`tools/router.py`) számolta az OpenStreetMap úthálózatán (Overture Maps), a leírásban szereplő fő útpontokon át. Egyenesekkel összekötött pont nincs.
 - Mindegyik útvonal és GPX-fájl **„generált nyomvonal”** címkét kapott (a weboldalon, a GPX `<desc>` mezőjében és a KML-ben is).
 
@@ -64,6 +64,7 @@ A GPX- és KML-fájlok az OSM-adatbázisból származtatott művek: **ODbL 1.0**
 | `gpx/rossfeld.gpx` | Rossfeld-panorámaút – vonattal oda, bringával haza | 54.7 km / 1395 m | generált | saját kreatív útvonal | ODbL (© OSM-közreműködők) |
 | `gpx/loferer-alm.gpx` | Loferer Alm és a Vorderkaserklamm | 36.4 km / 967 m | generált | komoot guide: „Gravelbiken around Thumsee” | ODbL (© OSM-közreműködők) |
 | `gpx/soleleitung-traunstein.gpx` | A sólé útja – 400 éves sóvezeték Traunsteinig | 43.9 km / 874 m | generált | saját kreatív útvonal | ODbL (© OSM-közreműködők) |
+| `gpx/soleleitung-oda-vissza.gpx` | A sólé útja oda-vissza – Traunstein és vissza bringával | 82.3 km / 1163 m | generált (oda: gravel-profil, vissza: „könnyű” profil – kerékpárút/kis forgalmú aszfalt) | saját kreatív útvonal | ODbL (© OSM-közreműködők) |
 | `gpx/salzburg-haza.gpx` | Vonattal Salzburgba, bringával haza (WOSSA 1 ihlette) | 32.2 km / 318 m | generált | WOSSA Etappe 1 (thomaskargl.at) – ihlet | ODbL (© OSM-közreműködők) |
 | `gpx/salzach-laufen.gpx` | Salzach-ártér–Abtsdorfer See–Laufen | 46.7 km / 230 m | generált | saját kreatív útvonal | ODbL (© OSM-közreműködők) |
 | `gpx/waginger-see.gpx` | Waginger See és Tachinger See | 102.9 km / 736 m | generált | saját kreatív útvonal | ODbL (© OSM-közreműködők) |
@@ -73,7 +74,7 @@ A GPX- és KML-fájlok az OSM-adatbázisból származtatott művek: **ODbL 1.0**
 1. `fetch_overture.py` – Overture parquet-fájlok letöltése a bbox-ra (12,40–13,45 K, 47,45–47,98 É), sorcsoport-statisztika alapú szűréssel.
 2. `build_graph.py` – az OSM-szegmensek csomópontoknál feldarabolva, egybeeső végpontok összevonva; gravel-költség: kerékpárral tiltott utak kizárva, murvás erdei út / kerékpárút kedvezményes, főút és ösvény büntetett, emelkedés-büntetés (SRTM).
 3. `routes_def.py` – útpontok, leírások, értékelések, indulási módok, októberi figyelmeztetések (Overture-névjegyzékkel ellenőrzött koordináták).
-4. `process.py` – útvonaltervezés (Dijkstra), 20 m-es újramintavételezés, SRTM-magasság, 200 m-es simítás, szint 4 m-es küszöbbel, leghosszabb emelkedő (≤15 m visszaeséssel), legmeredekebb 500 m, burkolat-megoszlás, Douglas–Peucker 10 m, GPX/KML/`data.js` export.
+4. `process.py` – útvonaltervezés (Dijkstra; visszautakhoz külön „könnyű” profil: kerékpárút és kis forgalmú aszfalt előnyben, murva, főút és emelkedő büntetve), 20 m-es újramintavételezés, SRTM-magasság, 200 m-es simítás, szint 4 m-es küszöbbel, leghosszabb emelkedő (≤15 m visszaeséssel), legmeredekebb 500 m, burkolat-megoszlás, Douglas–Peucker 10 m, GPX/KML/`data.js` export.
 5. `basemap.py` – offline domborzatárnyékolás (Web Mercator) + vektorrétegek (`basemap.js`).
 
 Burkolat-kategóriák: *aszfalt* = paved/paving_stones; *kemény murva* = gravel, ill. burkolatlan erdészeti/mező út (`track`/`service`/`unclassified` + unpaved vagy ismeretlen); *laza murva / erdei* = dirt/ground; *ösvény* = path/footway/bridleway burkolat nélkül. Az OSM-ben ismeretlen burkolatú `track` utakat kemény murvának becsültük.

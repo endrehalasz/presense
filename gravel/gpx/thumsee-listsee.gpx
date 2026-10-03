@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="Bad Reichenhall gravel – saját gravel-router (OSM/Overture + SRTM)" xmlns="http://www.topografix.com/GPX/1/1">
-<metadata><name>Thumsee–Listsee bemelegítő</name><desc>GENERÁLT NYOMVONAL – Rövid, szállodából induló kör a két legközelebbi tóhoz. A Kugelbachweg erdei murvaútján jutsz fel a Thumsee-hez, a Seewirttől a Listsee felé csendes mellékúton és erdei utakon kanyarodsz vissza a Padinger Alm alatt. Ideális érkezésnapi tesztkörnek vagy esős nap utáni rövid gurulásnak.</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-03T20:34:08Z</time></metadata>
+<metadata><name>Thumsee–Listsee bemelegítő</name><desc>GENERÁLT NYOMVONAL – Rövid, szállodából induló kör a két legközelebbi tóhoz. A Kugelbachweg erdei murvaútján jutsz fel a Thumsee-hez, a Seewirttől a Listsee felé csendes mellékúton és erdei utakon kanyarodsz vissza a Padinger Alm alatt. Ideális érkezésnapi tesztkörnek vagy esős nap utáni rövid gurulásnak.</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-03T21:20:00Z</time></metadata>
 <wpt lat="47.7232" lon="12.8726"><name>Alte Saline – sólepárló</name><type>history</type></wpt>
 <wpt lat="47.7193" lon="12.8219"><name>Thumsee</name><type>lake</type></wpt>
 <wpt lat="47.7358" lon="12.8343"><name>Listsee</name><type>lake</type></wpt>
