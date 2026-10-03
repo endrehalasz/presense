@@ -170,6 +170,32 @@ input[type=range]{width:100%;accent-color:var(--glow)}
 .backdetail{position:absolute;z-index:1050;right:12px;bottom:28px;display:none;box-shadow:var(--shadow)}
 .mapwrap.dhidden .backdetail{display:inline-flex}
 .gennote{font-size:12px;color:var(--ink-3);margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+/* ---------- időjárás ---------- */
+.daypick{display:flex;gap:6px;flex-wrap:wrap}
+.daypick .chip small{opacity:.7;font-size:11px}
+.wxb{font:600 11px var(--f-body);border-radius:6px;padding:1px 7px;display:inline-flex;gap:4px;align-items:center;border:1px solid var(--line)}
+.wxb.dry{background:color-mix(in srgb,var(--easy) 16%,var(--card));border-color:color-mix(in srgb,var(--easy) 45%,var(--line));color:var(--ink)}
+.wxb.mixed{background:color-mix(in srgb,var(--medium) 18%,var(--card));border-color:color-mix(in srgb,var(--medium) 50%,var(--line));color:var(--ink)}
+.wxb.wet{background:color-mix(in srgb,#3d7cc9 20%,var(--card));border-color:color-mix(in srgb,#3d7cc9 55%,var(--line));color:var(--ink)}
+.wxbox{background:var(--card);border:1px solid var(--line-2);border-radius:12px;padding:12px 13px}
+.wxhead{display:flex;gap:10px;align-items:flex-start}
+.wxhead .big{font-size:30px;line-height:1}
+.wxhead p{margin:0;font-size:14px}
+.wxhead b.when{font:600 17px/1.3 var(--f-body)}
+.wxverdict{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:2px}
+.wxverdict.dry{background:var(--easy);color:#fff}.wxverdict.mixed{background:var(--medium);color:#1d1406}.wxverdict.wet{background:#3d7cc9;color:#fff}
+.wxfacts{display:flex;flex-wrap:wrap;gap:4px 14px;font:500 12.5px var(--f-mono);color:var(--ink-2);margin:9px 0 4px}
+.wxstrip{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;align-items:end;height:74px;margin-top:8px;position:relative}
+.wxstrip .h{position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;border-radius:3px}
+.wxstrip .h.ride{background:color-mix(in srgb,var(--glow) 14%,transparent);outline:1px solid color-mix(in srgb,var(--glow) 55%,transparent)}
+.wxstrip .h.dark{opacity:.35}
+.wxstrip .bar{width:70%;background:#3d7cc9;border-radius:2px 2px 0 0;min-height:1px}
+.wxstrip .t{font:500 9.5px var(--f-mono);color:var(--ink-3);margin-top:2px}
+.wxstrip .tc{font:500 9px var(--f-mono);color:var(--ink-2)}
+.wxnote{font-size:12.5px;color:var(--ink-2);margin:8px 0 0}
+.wxwarn{font-size:13px;margin:8px 0 0;padding:7px 9px;border-radius:8px;background:color-mix(in srgb,#3d7cc9 12%,var(--card));border:1px solid color-mix(in srgb,#3d7cc9 35%,var(--line))}
+.wxdays{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.wxdays button{font-size:12px}
 /* ---------- modal ---------- */
 .modal{position:fixed;inset:0;z-index:2000;background:rgba(10,15,12,.55);display:none;align-items:center;justify-content:center;padding:16px}
 .modal.open{display:flex}
@@ -219,6 +245,9 @@ input[type=range]{width:100%;accent-color:var(--glow)}
     <section class="filters" id="filters">
       <button class="ftoggle" id="ftoggle" aria-expanded="false"><span>Szűrők és rendezés</span><span id="fcount"></span></button>
       <div class="fbody">
+        <div class="frow"><div class="flabel">Mikorra keresel útvonalat? (időjárás)</div>
+          <div class="daypick" id="daypick"></div>
+        </div>
         <div class="frow"><div class="flabel">Időtartam</div>
           <button class="chip" data-f="dur" data-v="all" aria-pressed="true">Mind</button>
           <button class="chip" data-f="dur" data-v="half" aria-pressed="false">Félnapos</button>
@@ -243,7 +272,7 @@ input[type=range]{width:100%;accent-color:var(--glow)}
         <div class="sortrow"><span id="count"></span>
           <span>Rendezés <select id="sort">
             <option value="rating">értékelés</option><option value="km">táv ↑</option><option value="up">szint ↑</option>
-            <option value="gravel">murva % ↓</option><option value="hotel">szállodától ↑</option><option value="name">név</option>
+            <option value="wx">időjárás (legszárazabb)</option><option value="gravel">murva % ↓</option><option value="hotel">szállodától ↑</option><option value="name">név</option>
           </select> <button class="linkbtn" id="reset">alaphelyzet</button></span>
         </div>
       </div>
@@ -269,6 +298,7 @@ input[type=range]{width:100%;accent-color:var(--glow)}
     <li><b>Burkolat-kategóriák:</b> aszfalt (paved), kemény murva (gravel/compacted, ill. burkolatlan erdészeti út), laza murva/erdei (dirt/ground), ösvény (path/footway burkolat nélkül).</li>
     <li><b>Becsült idő:</b> burkolatfüggő sebesség (aszfalt 22, kemény murva 17,5, laza 13,5, ösvény 9 km/h) + 650 m szint/óra. Pihenők nélkül.</li>
     <li><b>Fotók:</b> Wikimedia Commons API, futásidőben betöltve, a szerzővel és licenccel együtt (internet kell hozzájuk).</li>
+    <li><b>Időjárás:</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0) óránkénti előrejelzés, a böngészőben töltődik be (internet kell). Útvonalanként 3 pont (start, félút, legmagasabb pont) közül mindig a legrosszabb értékkel számolunk; az ajánlott indulás a túra becsült ideje + pihenők alatt várható legkevesebb csapadékot adó időpont a nappali világosságon belül.</li>
     <li><b>Térképrétegek:</b> OpenStreetMap, OpenTopoMap (CC-BY-SA), CyclOSM, Esri World Imagery – online; „Offline domborzat”: SRTM-árnyékolás + OSM-vektorok, internet nélkül is működik.</li>
   </ul>
   <h3>Fontos</h3>
@@ -431,7 +461,7 @@ function pass(r){
   if (F.start.size){ const modes = new Set(r.starts.map(s => s.mode)); for (const m of F.start) if (!modes.has(m)) return false; }
   return r.km <= F.km && r.up <= F.up && r.gravel >= F.gr;
 }
-const sorters = {rating:(a,b)=>b.rating-a.rating||a.km-b.km, km:(a,b)=>a.km-b.km, up:(a,b)=>a.up-b.up, gravel:(a,b)=>b.gravel-a.gravel, hotel:(a,b)=>a.hotelKm-b.hotelKm||a.km-b.km, name:(a,b)=>a.name.localeCompare(b.name,'hu')};
+const sorters = {rating:(a,b)=>b.rating-a.rating||a.km-b.km, km:(a,b)=>a.km-b.km, up:(a,b)=>a.up-b.up, gravel:(a,b)=>b.gravel-a.gravel, hotel:(a,b)=>a.hotelKm-b.hotelKm||a.km-b.km, name:(a,b)=>a.name.localeCompare(b.name,'hu'), wx:(a,b)=>wxScore(a)-wxScore(b)||b.rating-a.rating};
 function sbarHTML(s){ return `<div class="sbar">${SURF.map(([k,,v]) => s[k] > 0 ? `<i style="width:${s[k]}%;background:var(${v})" title="${k}"></i>` : '').join('')}</div>`; }
 function startIcons(r){ return r.starts.map(s => ({hotel:'🏨', car:'🚗', train:'🚆'})[s.mode]).join(' '); }
 function apply(){
@@ -450,6 +480,7 @@ function apply(){
         ${r.creative?'<span class="badge cre">✦ kreatív</span>':''}
         <span class="badge gen" title="Saját gravel-routerrel, OSM-utakon generálva">generált nyomvonal</span>
         <span class="badge" title="Indulási módok">${startIcons(r)}</span>
+        ${wxBadge(r)}
       </div>
       <div class="meta"><span>${fmt(r.km)} km</span><span>↑ ${fmt0(r.up)} m</span><span>⏱ ${hTime(r.timeH)}</span><span>▲ ${fmt0(r.maxEle)} m</span><span>murva ${fmt0(r.gravel)}%</span></div>
       <div style="margin-top:8px">${sbarHTML(r.surface)}</div>
@@ -524,6 +555,8 @@ function renderDetail(r){
       <div class="stat"><small>Murva / földút</small><b>${fmt0(r.gravel)}<span>%</span></b></div>
       <div class="stat"><small>Szállodától</small><b>${fmt(r.hotelKm)}<span>km</span></b><em>${r.fromHotel?'szállodából indítható':'a start távolsága'}</em></div>
     </div>
+    <h4 id="wxh">Időjárás és indulási javaslat</h4>
+    <div class="wxbox" id="wxbox">${wxDetailHTML(r)}</div>
     <h4>Burkolat</h4>
     <div class="surface">${sbarHTML(r.surface)}
       <div class="slegend">${SURF.map(([k,l,v]) => `<span><i style="background:var(${v})"></i>${l} <b>${fmt(r.surface[k])}%</b></span>`).join('')}</div></div>
@@ -560,6 +593,7 @@ function renderDetail(r){
   detail.classList.add('open'); $('.mapwrap').classList.add('dopen'); $('.mapwrap').classList.remove('dhidden');
   $('#dclose').onclick = closeDetail;
   detail.querySelectorAll('.hls li').forEach(li => li.onclick = () => { const h = r.highlights[+li.dataset.i]; map.flyTo([h.lat,h.lon], 14, {duration:.5}); if (innerWidth<=860){ detail.classList.remove('open'); $('.mapwrap').classList.add('dhidden'); scrollTo({top:0}); } });
+  bindWxDays();
   detail.querySelector('.dbody').scrollTop = 0;
   requestAnimationFrame(() => { setupProfile(r); });
   loadPhotos(r);
@@ -681,6 +715,140 @@ async function loadPhotos(r){
 }
 
 $('#backDetail').onclick = () => { detail.classList.add('open'); $('.mapwrap').classList.remove('dhidden'); };
+/* ---------------- időjárás (Open-Meteo) ---------------- */
+const WX = {day:0, loc:null, err:null, at:null, days:[]};
+const HU_DAYS = ['vasárnap','hétfő','kedd','szerda','csütörtök','péntek','szombat'];
+const HU_MON = ['jan.','febr.','márc.','ápr.','máj.','jún.','júl.','aug.','szept.','okt.','nov.','dec.'];
+const dayName = i => ['Ma','Holnap','Holnapután'][i];
+function dayDate(i){ if (WX.days[i]){ const [y,m,d] = WX.days[i].split('-').map(Number); return new Date(y, m-1, d); } const t = new Date(); t.setDate(t.getDate()+i); return t; }
+const dayLong = i => { const d = dayDate(i); return `${HU_MON[d.getMonth()]} ${d.getDate()}., ${HU_DAYS[d.getDay()]}`; };
+const savedDay = +(store.get('gr-day') || 0); WX.day = savedDay >= 0 && savedDay <= 2 ? savedDay : 0;
+function renderDayPick(){
+  $('#daypick').innerHTML = [0,1,2].map(i => `<button class="chip" data-day="${i}" aria-pressed="${WX.day===i}">${dayName(i)} <small>${dayLong(i)}</small></button>`).join('');
+  document.querySelectorAll('[data-day]').forEach(b => b.onclick = () => setDay(+b.dataset.day));
+}
+function setDay(i){ WX.day = i; store.set('gr-day', String(i)); renderDayPick(); apply(); if (sel) refreshWxDetail(); }
+function wxPoints(r){ const t = r.track; let hi = 0; t.forEach((p,i) => { if (p[2] > t[hi][2]) hi = i; }); return [t[0], t[Math.floor(t.length/2)], t[hi]]; }
+async function loadWeather(){
+  const CK = 'gr-wx-v1';
+  let cached = null; try { cached = JSON.parse(store.get(CK) || 'null'); } catch(e){}
+  const fresh = cached && (Date.now() - cached.t < 60*60*1000) && cached.n === R.length;
+  let raw = fresh ? cached.d : null;
+  if (!raw){
+    const pts = R.flatMap(wxPoints);
+    const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + pts.map(p => p[0].toFixed(3)).join(',') + '&longitude=' + pts.map(p => p[1].toFixed(3)).join(',')
+      + '&hourly=temperature_2m,precipitation_probability,precipitation,snowfall,weather_code,wind_speed_10m,wind_gusts_10m,freezing_level_height'
+      + '&daily=sunrise,sunset&timezone=Europe%2FBerlin&forecast_days=3&wind_speed_unit=kmh';
+    try {
+      const res = await fetch(u); if (!res.ok) throw new Error('HTTP ' + res.status);
+      let j = await res.json(); if (!Array.isArray(j)) j = [j];
+      const H = ['temperature_2m','precipitation_probability','precipitation','snowfall','weather_code','wind_speed_10m','wind_gusts_10m','freezing_level_height'];
+      raw = j.map(x => ({h: Object.fromEntries(H.map(k => [k, x.hourly[k]])), time:x.hourly.time, sr:x.daily.sunrise, ss:x.daily.sunset, days:x.daily.time}));
+      store.set(CK, JSON.stringify({t:Date.now(), n:R.length, d:raw}));
+      WX.at = new Date();
+    } catch(e){
+      if (cached && Date.now() - cached.t < 12*3600*1000){ raw = cached.d; WX.at = new Date(cached.t); WX.err = 'stale'; }
+      else { WX.err = String(e.message || e); renderDayPick(); if (sel) refreshWxDetail(); return; }
+    }
+  } else WX.at = new Date(cached.t);
+  Object.keys(_plan).forEach(k => delete _plan[k]);
+  WX.loc = {}; R.forEach((r,i) => { WX.loc[r.id] = raw.slice(i*3, i*3+3); });
+  WX.days = raw[0].days;
+  renderDayPick(); apply(); if (sel) refreshWxDetail();
+}
+const hh = s => { const t = s.split('T')[1].split(':'); return +t[0] + (+t[1])/60; };
+const clock = h => { const m = Math.round(h*60); return String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); };
+const rideHours = r => Math.max(1.5, r.timeH*1.15 + (r.timeH > 4 ? 1 : r.timeH > 2 ? .5 : .25));
+const wxIcon = (code, snow) => snow > 0 || (code >= 71 && code <= 77) || code === 85 || code === 86 ? '❄️' : code >= 95 ? '⛈️' : code >= 51 ? '🌧️' : code === 45 || code === 48 ? '🌫️' : code >= 3 ? '☁️' : code === 2 ? '⛅' : '☀️';
+const pIcon = p => p.verdict === 'late' ? '🌙' : p.snow > 0 ? '❄️' : p.verdict === 'wet' ? '🌧️' : p.verdict === 'mixed' ? '🌦️' : wxIcon(Math.min(p.code, 3), 0);
+const _plan = {};
+function plan(r, day){
+  if (!WX.loc) return null;
+  const key = r.id + ':' + day; if (_plan[key]) return _plan[key];
+  const L = WX.loc[r.id], base = day*24, A = L[0];
+  const sunrise = hh(A.sr[day]), sunset = hh(A.ss[day]);
+  const D = rideHours(r);
+  const at = (k, i, f) => f(...L.map(l => l.h[k][base+i] ?? 0));
+  const now = new Date(), nowH = now.getHours() + now.getMinutes()/60;
+  let earliest = Math.max(7, Math.ceil((sunrise + .25)*2)/2);
+  if (day === 0) earliest = Math.max(earliest, Math.ceil((nowH + .5)*2)/2);
+  let latest = Math.floor((sunset - .25 - D)*2)/2;
+  const daylight = latest >= earliest;
+  if (!daylight) latest = earliest;
+  const tooLate = day === 0 && earliest > sunset - 1.5;
+  const score = S => { let sc = 0; for (let h = Math.floor(S); h < S + D; h++){ const w = Math.min(h+1, S+D) - Math.max(h, S); if (h > 23) { sc += 5*w; continue; }
+      sc += w * (at('precipitation', h, Math.max)*4 + at('precipitation_probability', h, Math.max)/100*.8 + at('snowfall', h, Math.max)*8); } return sc; };
+  let best = earliest, bs = Infinity;
+  for (let S = earliest; S <= latest + 1e-9; S += .5){ const sc = score(S) + .03*Math.abs(S - 9.5); if (sc < bs){ bs = sc; best = S; } }
+  const end = best + D;
+  let rain = 0, pmax = 0, tmin = 99, tmax = -99, wind = 0, gust = 0, fz = 1e5, snow = 0, codes = [];
+  for (let h = Math.floor(best); h < Math.min(24, Math.ceil(end)); h++){
+    const w = Math.min(h+1, end) - Math.max(h, best);
+    rain += w*at('precipitation', h, Math.max); pmax = Math.max(pmax, at('precipitation_probability', h, Math.max));
+    tmin = Math.min(tmin, at('temperature_2m', h, Math.min)); tmax = Math.max(tmax, at('temperature_2m', h, Math.max));
+    wind = Math.max(wind, at('wind_speed_10m', h, Math.max)); gust = Math.max(gust, at('wind_gusts_10m', h, Math.max));
+    fz = Math.min(fz, at('freezing_level_height', h, Math.min)); snow += w*at('snowfall', h, Math.max); codes.push(at('weather_code', h, Math.max));
+  }
+  // egész napos csapadék (tájékoztató)
+  let dayRain = 0; for (let h = 6; h < 21; h++) dayRain += at('precipitation', h, Math.max);
+  const verdict = tooLate ? 'late' : (rain < .3 && pmax < 35 && snow === 0) ? 'dry' : (rain < 2 && pmax < 70 && snow < .5) ? 'mixed' : 'wet';
+  const code = codes.length ? codes.sort((a,b)=>a-b)[Math.floor(codes.length*.7)] : 0;
+  const slot = D > 5.5 ? 'egész napos' : end <= 13.75 ? 'délelőtt' : best >= 12 ? 'délután' : 'napközben';
+  return _plan[key] = {start:best, end, D, sunrise, sunset, daylight, tooLate, rain, pmax, tmin, tmax, wind, gust, fz, snow, dayRain, verdict, code, slot, score:bs, base};
+}
+function wxScore(r){ const p = plan(r, WX.day); if (!p) return 0; return (p.verdict === 'late' ? 1000 : 0) + p.rain*4 + p.pmax/100 + p.snow*8 + (p.daylight ? 0 : 50); }
+const VERD = {dry:'száraz ablak', mixed:'zápor lehet', wet:'esős', late:'mára késő'};
+function wxBadge(r){
+  if (!WX.loc) return '';
+  const p = plan(r, WX.day);
+  if (p.verdict === 'late') return `<span class="wxb wet" title="Mára már nem fér bele világosban">🌙 mára késő</span>`;
+  return `<span class="wxb ${p.verdict}" title="${dayName(WX.day)}: ajánlott indulás ${clock(p.start)}, ${VERD[p.verdict]} (${fmt(p.rain)} mm, max ${p.pmax}%)">${pIcon(p)} ${clock(p.start)} · ${VERD[p.verdict]}</span>`;
+}
+function wxDetailHTML(r){
+  if (WX.err && !WX.loc) return `<p class="wxnote">Az időjárás-előrejelzés nem töltődött be (${esc(WX.err)}). Ehhez internet kell; az oldal többi része offline is működik. <button class="linkbtn" onclick="window.__wxReload()">Újrapróbálom</button></p>`;
+  if (!WX.loc) return '<p class="wxnote">Előrejelzés betöltése az Open-Meteóról…</p>';
+  const p = plan(r, WX.day), d = WX.day;
+  const other = [0,1,2].map(i => ({i, p:plan(r,i)}));
+  const bestDay = other.filter(o => o.p.verdict !== 'late').sort((a,b) => (a.p.rain*4+a.p.pmax/100+a.p.snow*8) - (b.p.rain*4+b.p.pmax/100+b.p.snow*8))[0];
+  let head;
+  if (p.verdict === 'late') head = `<p><b class="when">Mára már késő ehhez az úthoz</b><br>Napnyugta ${clock(p.sunset)}, a túra kb. ${hTime(p.D)} óra pihenőkkel. Válaszd holnapot vagy egy rövidebb útvonalat.</p>`;
+  else head = `<p><b class="when">Indulás ${clock(p.start)} → érkezés ~${clock(p.end)}</b><span class="wxverdict ${p.verdict}">${VERD[p.verdict]}</span><br>${dayName(d)} (${dayLong(d)}) · ${p.slot} · kb. ${hTime(p.D)} óra pihenőkkel${preTrip(r, p)}</p>`;
+  const facts = p.verdict === 'late' ? '' : `<div class="wxfacts"><span>🌡 ${fmt0(p.tmin)}–${fmt0(p.tmax)} °C</span><span>🌧 ${fmt(p.rain)} mm · max ${fmt0(p.pmax)}%</span><span>💨 ${fmt0(p.wind)} km/h (lökés ${fmt0(p.gust)})</span><span>🌅 ${clock(p.sunrise)}–${clock(p.sunset)}</span><span>❄ fagyhatár ${fmt0(p.fz)} m</span></div>`;
+  // óránkénti sáv 6–20
+  const L = WX.loc[r.id], b = p.base;
+  const cells = []; for (let h = 6; h <= 20; h++){
+    const pr = Math.max(...L.map(l => l.h.precipitation_probability[b+h] ?? 0)), mm = Math.max(...L.map(l => l.h.precipitation[b+h] ?? 0));
+    const t = Math.min(...L.map(l => l.h.temperature_2m[b+h] ?? 0));
+    const ride = p.verdict !== 'late' && h + 1 > p.start && h < p.end, dark = h + 1 <= p.sunrise || h >= p.sunset;
+    cells.push(`<div class="h${ride?' ride':''}${dark?' dark':''}" title="${h}:00 – csapadék ${fmt(mm)} mm, esély ${pr}%, ${fmt0(t)} °C"><span class="tc">${fmt0(t)}°</span><div class="bar" style="height:${Math.max(2, pr*.46)}px;opacity:${.35 + Math.min(.65, mm/2)}"></div><span class="t">${h}</span></div>`);
+  }
+  const warns = [];
+  if (p.verdict === 'wet') warns.push(`Az egész ablakban esőre kell számítani (${fmt(p.rain)} mm). ${bestDay && bestDay.i !== d ? `Ehhez az úthoz <b>${dayName(bestDay.i).toLowerCase()}</b> (${dayLong(bestDay.i)}) jobb: ${VERD[bestDay.p.verdict]}, indulás ${clock(bestDay.p.start)}.` : 'Válassz rövidebb, alacsonyabb útvonalat, vagy vigyél esőruhát.'}`);
+  else if (p.verdict === 'mixed') warns.push(`Zápor lehetséges – vigyél esőkabátot. ${bestDay && bestDay.i !== d && bestDay.p.verdict === 'dry' ? `${dayName(bestDay.i)} száraznak tűnik (indulás ${clock(bestDay.p.start)}).` : ''}`);
+  if (!p.daylight && p.verdict !== 'late') warns.push(`A túra (pihenőkkel ~${hTime(p.D)} óra) nem fér bele teljesen a nappali világosságba – indulj ${clock(p.start)}-kor, és legyen lámpa nálad.`);
+  if (p.verdict !== 'late' && p.fz < r.maxEle + 300) warns.push(`A fagyhatár ${fmt0(p.fz)} m körül lesz, a legmagasabb pont ${fmt0(r.maxEle)} m – <b>jég vagy hó lehet</b> a felső szakaszon.`);
+  if (p.snow > 0) warns.push(`Havazás várható (${fmt(p.snow)} cm) – a magas szakaszt hagyd ki.`);
+  if (p.verdict !== 'late' && p.gust >= 50) warns.push(`Erős széllökések (${fmt0(p.gust)} km/h) – erdőben letört ágak, gerinceken óvatosan.`);
+  if (p.verdict !== 'late' && p.tmin <= 3) warns.push(`Hideg: ${fmt0(p.tmin)} °C körül – téli kesztyű, kamásli, réteges öltözet.`);
+  return `<div class="wxhead"><span class="big">${pIcon(p)}</span><div>${head}</div></div>${facts}
+    <div class="wxstrip" aria-label="Óránkénti csapadékesély">${cells.join('')}</div>
+    ${warns.map(w => `<p class="wxwarn">${w}</p>`).join('')}
+    <div class="wxdays">${other.map(o => `<button class="chip" data-wxday="${o.i}" aria-pressed="${o.i===d}">${dayName(o.i)}: ${pIcon(o.p)} ${o.p.verdict==='late'?'késő':clock(o.p.start)}</button>`).join('')}</div>
+    <p class="wxnote">Sáv: csapadékesély óránként (6–20 h), kiemelve az ajánlott menetidő. Az útvonal 3 pontja közül mindig a legrosszabb értéket mutatjuk. Forrás: Open-Meteo.com${WX.at ? ', frissítve ' + clock(WX.at.getHours() + WX.at.getMinutes()/60) : ''}${WX.err === 'stale' ? ' (tárolt adat, offline)' : ''}.</p>`;
+}
+function preTrip(r, p){
+  if (r.fromHotel) return '';
+  const tr = r.starts.find(x => x.mode === 'train'), car = r.starts.find(x => x.mode === 'car');
+  const parts = [];
+  if (tr && tr.min) parts.push(`vonattal ~${clock(p.start - (tr.min + 20)/60)}-kor indulj a szállodától (${tr.min} perc + átszállás/jegy, ${esc(tr.name)}; nézd meg a menetrendet)`);
+  if (car) parts.push(`autóval ~${clock(p.start - (car.min + 10)/60)}-kor (${car.min} perc, ${esc(car.name)})`);
+  return parts.length ? '<br><small>' + parts.join('; ') + '.</small>' : '';
+}
+function bindWxDays(){ document.querySelectorAll('[data-wxday]').forEach(b => b.onclick = () => setDay(+b.dataset.wxday)); }
+function refreshWxDetail(){ const box = $('#wxbox'); if (box && sel){ box.innerHTML = wxDetailHTML(sel); bindWxDays(); } }
+window.__wxReload = () => { WX.err = null; refreshWxDetail(); loadWeather(); };
+renderDayPick();
+loadWeather();
 /* ---------------- indítás ---------------- */
 apply();
 const all = L.featureGroup(Object.values(lines).map(l => l.line));
