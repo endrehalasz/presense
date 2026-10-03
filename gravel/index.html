@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gravel Bad Reichenhall</title>
+<meta name="description" content="23 gravel-útvonal Bad Reichenhall környékén: interaktív térkép, magassági profil, burkolat, indulási módok és októberi tudnivalók.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f3a2e'/%3E%3Cpath d='M6 50 L24 22 L33 35 L41 26 L58 50Z' fill='%23f2ede3'/%3E%3Cpath d='M24 22 L29 30 L26 31 L22 28Z' fill='%23d9692b'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="lib/leaflet/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f3efe6; --paper-2:#ebe5d8; --card:#fbf9f4; --ink:#1d2a23; --ink-2:#4a564f; --ink-3:#7b847e;
+  --line:#d9d2c3; --line-2:#e6e0d3; --forest:#1f3a2e; --forest-2:#2c5241; --glow:#d9692b; --glow-soft:#f6dccb;
+  --easy:#2f8a4f; --medium:#d18a17; --hard:#c0392f;
+  --s-asphalt:#7b8189; --s-hard:#cfa762; --s-loose:#8d6a3d; --s-trail:#4c7c3b;
+  --shadow:0 1px 2px rgba(30,40,30,.06),0 6px 24px rgba(30,40,30,.08);
+  --radius:14px; --side:410px;
+  --f-head:"Fraunces",Georgia,"Times New Roman",serif; --f-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#121815; --paper-2:#18201c; --card:#1b2420; --ink:#e8ece6; --ink-2:#b5bfb7; --ink-3:#86918a;
+    --line:#2c3833; --line-2:#24302b; --forest:#a8d5b9; --forest-2:#7fb898; --glow:#f08a4b; --glow-soft:#3a2a20;
+    --easy:#4cb26f; --medium:#e7a63a; --hard:#e2584c; --s-asphalt:#8f969e; --s-hard:#d8b16c; --s-loose:#a9824e; --s-trail:#69a052;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121815; --paper-2:#18201c; --card:#1b2420; --ink:#e8ece6; --ink-2:#b5bfb7; --ink-3:#86918a;
+  --line:#2c3833; --line-2:#24302b; --forest:#a8d5b9; --forest-2:#7fb898; --glow:#f08a4b; --glow-soft:#3a2a20;
+  --easy:#4cb26f; --medium:#e7a63a; --hard:#e2584c; --s-asphalt:#8f969e; --s-hard:#d8b16c; --s-loose:#a9824e; --s-trail:#69a052;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:15px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--forest-2)}
+.app{display:grid;grid-template-columns:var(--side) 1fr;height:100vh;height:100dvh}
+/* ---------- oldalsáv ---------- */
+.side{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);background:var(--paper)}
+.brand{position:relative;padding:18px 20px 14px;background:var(--forest);color:#f3efe6;overflow:hidden}
+:root[data-theme="dark"] .brand{background:#16261e}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .brand{background:#16261e}}
+.brand svg.contours{position:absolute;inset:0;width:100%;height:100%;opacity:.16;pointer-events:none}
+.brand h1{position:relative;margin:0;font:700 25px/1.1 var(--f-head);letter-spacing:-.01em}
+.brand h1 em{font-style:normal;color:#f4a46f}
+.brand p{position:relative;margin:6px 0 0;font-size:13px;opacity:.85}
+.brand .tools{position:absolute;top:14px;right:14px;display:flex;gap:6px}
+.iconbtn{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#f3efe6;cursor:pointer}
+.iconbtn:hover{background:rgba(255,255,255,.18)}
+.iconbtn svg{width:18px;height:18px}
+.filters{padding:12px 16px 6px;border-bottom:1px solid var(--line);background:var(--paper-2)}
+.ftoggle{display:none}
+.frow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center}
+.flabel{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);width:100%;margin-bottom:-2px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 11px;font-size:13px;cursor:pointer;display:inline-flex;gap:6px;align-items:center;user-select:none}
+.chip[aria-pressed="true"]{background:var(--forest);border-color:var(--forest);color:var(--paper)}
+.chip .dot{width:9px;height:9px;border-radius:50%}
+.sliders{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:4px 0 8px}
+.sl label{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-2)}
+.sl b{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--glow)}
+.sortrow{display:flex;gap:8px;align-items:center;justify-content:space-between;font-size:13px;color:var(--ink-2)}
+.sortrow select{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:3px 6px}
+.linkbtn{background:none;border:0;color:var(--glow);cursor:pointer;padding:0;font-size:13px;text-decoration:underline}
+.list{flex:1;overflow:auto;padding:10px 12px 24px;scroll-behavior:smooth}
+.card{background:var(--card);border:1px solid var(--line-2);border-radius:var(--radius);padding:12px 13px 11px;margin-bottom:9px;cursor:pointer;position:relative;transition:border-color .15s,transform .15s,box-shadow .15s}
+.card:hover,.card.hover{border-color:var(--glow);box-shadow:var(--shadow)}
+.card.active{border-color:var(--forest-2);box-shadow:0 0 0 2px var(--forest-2) inset}
+.card .stripe{position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 4px 4px 0}
+.card h3{margin:0 0 3px;font:600 15.5px/1.25 var(--f-body);padding-right:64px}
+.card .stars{position:absolute;right:12px;top:12px;color:var(--glow);font-size:12.5px;letter-spacing:1px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--ink-2);font-family:var(--f-mono)}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 7px}
+.badge{font-size:11px;font-weight:600;border-radius:6px;padding:1px 7px;border:1px solid var(--line);color:var(--ink-2);background:var(--paper);display:inline-flex;gap:4px;align-items:center}
+.badge.d-konnyu{color:#fff;background:var(--easy);border-color:var(--easy)}
+.badge.d-kozepes{color:#1d1406;background:var(--medium);border-color:var(--medium)}
+.badge.d-nehez{color:#fff;background:var(--hard);border-color:var(--hard)}
+.badge.gen{border-style:dashed}
+.badge.cre{background:var(--glow-soft);border-color:var(--glow);color:var(--glow)}
+.badge svg{width:12px;height:12px}
+.sbar{display:flex;height:6px;border-radius:4px;overflow:hidden;background:var(--line-2)}
+.sbar i{display:block;height:100%}
+.empty{padding:30px 10px;text-align:center;color:var(--ink-3)}
+/* ---------- térkép ---------- */
+.mapwrap{position:relative;min-height:0}
+#map{position:absolute;inset:0;background:var(--paper-2)}
+.leaflet-container{font:inherit}
+:root[data-theme="dark"] .leaflet-tile-pane{filter:brightness(.78) contrast(1.05) saturate(.85)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .leaflet-tile-pane{filter:brightness(.78) contrast(1.05) saturate(.85)}}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--card);color:var(--ink)}
+.leaflet-popup-content{margin:12px 14px;font-size:13.5px}
+.leaflet-popup-content b{font-weight:600}
+.leaflet-control-layers,.leaflet-bar a{background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.leaflet-control-layers{border-radius:10px!important;box-shadow:var(--shadow)!important;border:1px solid var(--line)!important}
+.leaflet-control-attribution{background:color-mix(in srgb,var(--card) 80%,transparent)!important;color:var(--ink-3)!important}
+.leaflet-control-attribution a{color:var(--ink-2)!important}
+.pin{display:grid;place-items:center;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);color:#fff;font:700 11px/1 var(--f-body)}
+.pin svg{width:14px;height:14px}
+.pin.hotel{background:var(--glow);width:34px!important;height:34px!important}
+.pin.hotel svg{width:18px;height:18px}
+.pin.train{background:#2f5d8a}
+.pin.park{background:#3c6fb6;border-radius:6px}
+.pin.hl{background:var(--card);color:var(--ink);border-color:var(--forest-2)}
+.townlbl{font:600 11px/1 var(--f-body);color:#2a332d;text-shadow:0 0 3px #f3efe6,0 0 3px #f3efe6;white-space:nowrap}
+.peaklbl{font:500 10px/1 var(--f-body);color:#5b4a3a;text-shadow:0 0 3px #f3efe6;white-space:nowrap}
+.netbadge{position:absolute;left:50%;transform:translateX(-50%);top:12px;z-index:500;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12px;box-shadow:var(--shadow);display:none}
+.legend{position:absolute;left:56px;top:10px;z-index:500;background:color-mix(in srgb,var(--card) 92%,transparent);border:1px solid var(--line);border-radius:12px;padding:8px 11px;font-size:12px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{display:inline-block;width:18px;height:4px;border-radius:2px}
+@media (max-width:1500px){.mapwrap.dopen .legend{display:none}}
+.mapwrap.dopen .leaflet-top.leaflet-right{right:min(520px,100%);transition:right .28s}
+.z-low .pin.park{display:none}
+.z-low .peaklbl{display:none}
+/* ---------- adatlap ---------- */
+.detail{position:absolute;top:0;right:0;bottom:0;width:min(520px,100%);z-index:1100;background:var(--paper);border-left:1px solid var(--line);box-shadow:-10px 0 40px rgba(0,0,0,.12);transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+.detail.open{transform:none}
+.dhead{padding:16px 18px 12px;border-bottom:1px solid var(--line);background:var(--card);position:relative}
+.dhead h2{margin:0 40px 4px 0;font:700 22px/1.15 var(--f-head);letter-spacing:-.01em}
+.dhead .close{position:absolute;right:12px;top:12px;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--paper);cursor:pointer;display:grid;place-items:center}
+.dbody{flex:1;overflow:auto;padding:14px 18px 40px}
+.dbody h4{margin:22px 0 8px;font:600 12px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.desc{margin:4px 0 0;color:var(--ink);font-size:14.5px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stat{background:var(--card);border:1px solid var(--line-2);border-radius:12px;padding:9px 10px}
+.stat small{display:block;font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em}
+.stat b{font:500 20px/1.2 var(--f-mono)}
+.stat b span{font-size:12px;color:var(--ink-2);margin-left:2px}
+.stat em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-2)}
+.surface .sbar{height:12px;border-radius:6px}
+.slegend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:7px;font-size:12.5px;color:var(--ink-2)}
+.slegend span{display:inline-flex;gap:6px;align-items:center}
+.slegend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.profile{position:relative;background:var(--card);border:1px solid var(--line-2);border-radius:12px;padding:8px 6px 4px}
+.profile canvas{display:block;width:100%;height:190px;touch-action:none;cursor:crosshair}
+.ptip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font:500 11.5px/1.35 var(--f-mono);padding:4px 7px;border-radius:7px;white-space:nowrap;transform:translate(-50%,-110%);display:none}
+.gradeleg{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-2);margin:6px 4px 2px}
+.gradeleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.climbs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.hls{list-style:none;margin:0;padding:0}
+.hls li{display:flex;gap:10px;align-items:center;padding:7px 4px;border-bottom:1px dashed var(--line);cursor:pointer}
+.hls li:hover{background:var(--paper-2)}
+.hls .ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--paper-2);flex:none}
+.hls .ic svg{width:16px;height:16px}
+.hls .km{margin-left:auto;font:500 12px var(--f-mono);color:var(--ink-3)}
+.starts{display:grid;gap:8px}
+.start{display:flex;gap:10px;background:var(--card);border:1px solid var(--line-2);border-radius:12px;padding:10px 12px}
+.start .ic{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff}
+.start .ic svg{width:17px;height:17px}
+.start p{margin:0;font-size:13.5px}
+.start small{display:block;color:var(--ink-2);font-size:12.5px;margin-top:2px}
+.warn{background:color-mix(in srgb,var(--glow) 10%,var(--card));border:1px solid color-mix(in srgb,var(--glow) 40%,var(--line));border-radius:12px;padding:10px 12px 10px 14px}
+.warn ul{margin:0;padding-left:18px}
+.warn li{margin:3px 0;font-size:13.5px}
+.photos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.photo{margin:0;border-radius:10px;overflow:hidden;background:var(--paper-2);border:1px solid var(--line-2)}
+.photo a{display:block;aspect-ratio:4/3;background:var(--paper-2)}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo figcaption{font-size:10.5px;line-height:1.3;color:var(--ink-3);padding:5px 7px 6px}
+.photonote{font-size:12.5px;color:var(--ink-3)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.btn{display:inline-flex;gap:7px;align-items:center;border-radius:10px;padding:8px 13px;font-size:13.5px;font-weight:600;text-decoration:none;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--forest);border-color:var(--forest);color:var(--paper)}
+.btn svg{width:16px;height:16px}
+.btn:hover{filter:brightness(1.05);border-color:var(--glow)}
+.backdetail{position:absolute;z-index:1050;right:12px;bottom:28px;display:none;box-shadow:var(--shadow)}
+.mapwrap.dhidden .backdetail{display:inline-flex}
+.gennote{font-size:12px;color:var(--ink-3);margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;z-index:2000;background:rgba(10,15,12,.55);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.open{display:flex}
+.modal .box{background:var(--paper);color:var(--ink);max-width:680px;width:100%;max-height:85vh;overflow:auto;border-radius:16px;padding:20px 22px;box-shadow:var(--shadow)}
+.modal h2{font:700 22px var(--f-head);margin:0 0 8px}
+.modal h3{font:600 14px var(--f-body);margin:16px 0 4px}
+.modal p,.modal li{font-size:14px}
+/* ---------- mobil ---------- */
+@media (max-width: 860px){
+  .app{display:flex;flex-direction:column;height:auto;min-height:100dvh}
+  .mapwrap{order:-1;position:sticky;top:0;height:44vh;height:44dvh;z-index:5;border-bottom:1px solid var(--line)}
+  .side{border-right:0}
+  .brand{padding:14px 16px 12px}
+  .brand h1{font-size:21px}
+  .list{overflow:visible;padding:10px 12px 40px}
+  .filters{padding:10px 14px 4px}
+  .ftoggle{display:flex;width:100%;justify-content:space-between;align-items:center;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 12px;margin-bottom:8px;cursor:pointer;font-weight:600;font-size:14px}
+  .filters:not(.open) .fbody{display:none}
+  .sliders{grid-template-columns:1fr}
+  .detail{position:fixed;inset:0;width:100%;border-left:0;transform:translateY(105%)}
+  .detail.open{transform:none}
+  .legend{display:none}
+  .leaflet-control-attribution{font-size:9.5px;max-width:78vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .netbadge{top:auto;bottom:22px;font-size:11px}
+  .z-low .townlbl{font-size:10px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width: 380px){.photos{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <header class="brand">
+      <svg class="contours" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#f3efe6" stroke-width="1">
+        <path d="M-10 100 C60 70 110 95 170 60 S290 30 410 55"/><path d="M-10 112 C70 82 120 108 180 74 S300 46 410 70"/>
+        <path d="M-10 88 C50 58 100 82 160 46 S280 14 410 40"/><path d="M-10 76 C40 46 95 68 150 32 S270 0 410 26"/>
+        <path d="M60 120 C120 100 160 112 230 90 S340 80 410 92"/><path d="M200 18 C230 8 260 14 290 4"/></g></svg>
+      <h1>Gravel <em>Bad Reichenhall</em></h1>
+      <p>Útvonalak a sólé városa körül · október eleje</p>
+      <div class="tools">
+        <a class="iconbtn" href="gravel_utvonalak.kml" download title="Összes útvonal KML-ben (Google My Maps)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v3h16v-3"/></svg></a>
+        <button class="iconbtn" id="infoBtn" title="Módszer és források"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button>
+        <button class="iconbtn" id="themeBtn" title="Világos / sötét mód"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg></button>
+      </div>
+    </header>
+    <section class="filters" id="filters">
+      <button class="ftoggle" id="ftoggle" aria-expanded="false"><span>Szűrők és rendezés</span><span id="fcount"></span></button>
+      <div class="fbody">
+        <div class="frow"><div class="flabel">Időtartam</div>
+          <button class="chip" data-f="dur" data-v="all" aria-pressed="true">Mind</button>
+          <button class="chip" data-f="dur" data-v="half" aria-pressed="false">Félnapos</button>
+          <button class="chip" data-f="dur" data-v="full" aria-pressed="false">Egész napos</button>
+          <button class="chip" data-f="creative" aria-pressed="false" title="Csak a kreatív útvonalak">✦ Csak kreatív</button>
+        </div>
+        <div class="frow"><div class="flabel">Nehézség</div>
+          <button class="chip" data-f="diff" data-v="konnyu" aria-pressed="true"><i class="dot" style="background:var(--easy)"></i>Könnyű</button>
+          <button class="chip" data-f="diff" data-v="kozepes" aria-pressed="true"><i class="dot" style="background:var(--medium)"></i>Közepes</button>
+          <button class="chip" data-f="diff" data-v="nehez" aria-pressed="true"><i class="dot" style="background:var(--hard)"></i>Nehéz</button>
+        </div>
+        <div class="frow"><div class="flabel">Indulás</div>
+          <button class="chip" data-f="start" data-v="hotel" aria-pressed="false">🏨 Szállodából</button>
+          <button class="chip" data-f="start" data-v="car" aria-pressed="false">🚗 Autóval ≤30′</button>
+          <button class="chip" data-f="start" data-v="train" aria-pressed="false">🚆 Vonattal</button>
+        </div>
+        <div class="sliders">
+          <div class="sl"><label>Max táv <b id="vkm"></b></label><input type="range" id="fkm" min="20" max="150" step="5" value="150"></div>
+          <div class="sl"><label>Max szint <b id="vup"></b></label><input type="range" id="fup" min="200" max="2500" step="50" value="2500"></div>
+          <div class="sl"><label>Min murva <b id="vgr"></b></label><input type="range" id="fgr" min="0" max="80" step="5" value="0"></div>
+        </div>
+        <div class="sortrow"><span id="count"></span>
+          <span>Rendezés <select id="sort">
+            <option value="rating">értékelés</option><option value="km">táv ↑</option><option value="up">szint ↑</option>
+            <option value="gravel">murva % ↓</option><option value="hotel">szállodától ↑</option><option value="name">név</option>
+          </select> <button class="linkbtn" id="reset">alaphelyzet</button></span>
+        </div>
+      </div>
+    </section>
+    <div class="list" id="list"></div>
+  </aside>
+  <main class="mapwrap">
+    <div id="map" role="application" aria-label="Térkép"></div>
+    <div class="legend"><span><i style="background:var(--easy)"></i>könnyű</span><span><i style="background:var(--medium)"></i>közepes</span><span><i style="background:var(--hard)"></i>nehéz</span></div>
+    <div class="netbadge" id="netbadge">Offline mód – beépített domborzati alaptérkép</div>
+    <button class="btn primary backdetail" id="backDetail">↩ Vissza az adatlaphoz</button>
+    <section class="detail" id="detail" aria-live="polite"></section>
+  </main>
+</div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true"><div class="box">
+  <h2>Módszer és források</h2>
+  <p>Minden nyomvonal <b>valódi úthálózatot követ</b>: az OpenStreetMap utak (Overture Maps 2026-09 kiadás, ODbL) alapján egy saját, gravel-preferenciájú útvonaltervező számolta őket a megadott útpontokon át. Ezért mindegyik <b>„generált nyomvonal”</b> – a komoot/bergfex/WOSSA forrástúrák csak ihletként és útpont-alapként szolgáltak, mert azok GPX-ét ebből a környezetből nem lehetett letölteni.</p>
+  <h3>Adatok</h3>
+  <ul>
+    <li><b>Úthálózat, burkolat, hozzáférés:</b> © OpenStreetMap közreműködők, Overture Maps Foundation (ODbL). Kerékpárral tiltott utakat a tervező kihagyja.</li>
+    <li><b>Magasság:</b> SRTM 1″ (NASA/USGS, közkincs) – AWS Terrain Tiles. Szintemelkedés 200 m-es simítással, 4 m-es küszöbbel.</li>
+    <li><b>Burkolat-kategóriák:</b> aszfalt (paved), kemény murva (gravel/compacted, ill. burkolatlan erdészeti út), laza murva/erdei (dirt/ground), ösvény (path/footway burkolat nélkül).</li>
+    <li><b>Becsült idő:</b> burkolatfüggő sebesség (aszfalt 22, kemény murva 17,5, laza 13,5, ösvény 9 km/h) + 650 m szint/óra. Pihenők nélkül.</li>
+    <li><b>Fotók:</b> Wikimedia Commons API, futásidőben betöltve, a szerzővel és licenccel együtt (internet kell hozzájuk).</li>
+    <li><b>Térképrétegek:</b> OpenStreetMap, OpenTopoMap (CC-BY-SA), CyclOSM, Esri World Imagery – online; „Offline domborzat”: SRTM-árnyékolás + OSM-vektorok, internet nélkül is működik.</li>
+  </ul>
+  <h3>Fontos</h3>
+  <p>A generált nyomvonalak a térképadatokon alapulnak, terepen nem ellenőrzöttek. Lezárást, fakitermelést, tiltótáblát mindig tarts be. Október elején 1200 m felett hó lehet, a kunyhók egy része zár, a nap ~18:50-kor nyugszik.</p>
+  <p style="text-align:right"><button class="btn primary" id="modalClose">Bezár</button></p>
+</div></div>
+
+<script src="lib/leaflet/leaflet.js"></script>
+<script src="data.js"></script>
+<script src="basemap.js"></script>
+<script>
+(function(){
+'use strict';
+const D = window.GRAVEL, R = D.routes;
+const $ = s => document.querySelector(s);
+const fmt = (n, d=1) => Number(n).toLocaleString('hu-HU', {minimumFractionDigits:d, maximumFractionDigits:d});
+const fmt0 = n => Math.round(n).toLocaleString('hu-HU');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = { get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} } };
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const DIFF = {konnyu:'Könnyű', kozepes:'Közepes', nehez:'Nehéz'};
+const DIFFVAR = {konnyu:'--easy', kozepes:'--medium', nehez:'--hard'};
+const SURF = [['asphalt','aszfalt','--s-asphalt'],['hard','kemény murva','--s-hard'],['loose','laza murva / erdei','--s-loose'],['trail','ösvény','--s-trail']];
+const hTime = h => { const m = Math.round(h*60/5)*5; return Math.floor(m/60) + ':' + String(m%60).padStart(2,'0'); };
+const gmapsPt = (lat,lon) => `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+const gmapsNav = (lat,lon,mode) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}${mode?'&travelmode='+mode:''}`;
+
+const ICON = {
+  hotel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21v-6h6v6"/></svg>',
+  train:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14M9 21l-2-4m10 4-2-4"/><circle cx="9" cy="14" r=".6"/><circle cx="15" cy="14" r=".6"/></svg>',
+  car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16V11l2-5h10l2 5v5"/><path d="M3 16h18v3H3z"/><circle cx="7.5" cy="13" r=".7"/><circle cx="16.5" cy="13" r=".7"/></svg>',
+  lake:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 14c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0M3 18c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0M7 9l3-4 2 2.5L14 5l3 4"/></svg>',
+  hut:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7M5 10v10h14V10M10 20v-5h4v5"/></svg>',
+  gorge:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4l4 8-3 8M21 4l-4 8 3 8M11 6c1 3-1 5 0 8s-1 4 0 6"/></svg>',
+  view:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  history:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16M6 21V10M18 21V10M10 21V10M14 21V10M3 10l9-6 9 6z"/></svg>',
+  town:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V10l5-4 5 4v11M14 21v-7h6v7M8 13h2M8 17h2"/></svg>',
+  pass:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20 9 8l4 6 3-4 6 10z"/></svg>',
+  station:null, park:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20V4h5a4 4 0 0 1 0 8H8"/></svg>',
+  star:'★'
+};
+ICON.station = ICON.train;
+const HLCOL = {lake:'#2f6fa3', hut:'#9a5b2e', gorge:'#4f6b3a', view:'#7a5aa0', history:'#8a6d2d', town:'#56605a', pass:'#a0452f', station:'#2f5d8a'};
+
+/* ---------------- téma ---------------- */
+const root = document.documentElement;
+const savedTheme = store.get('gr-theme'); if (savedTheme) root.dataset.theme = savedTheme;
+$('#themeBtn').onclick = () => {
+  const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = dark ? 'light' : 'dark'; store.set('gr-theme', root.dataset.theme); restyle(); if (sel) drawProfile();
+};
+$('#infoBtn').onclick = () => $('#modal').classList.add('open');
+$('#modalClose').onclick = () => $('#modal').classList.remove('open');
+$('#modal').onclick = e => { if (e.target.id === 'modal') $('#modal').classList.remove('open'); };
+
+/* ---------------- térkép ---------------- */
+const map = L.map('map', {zoomControl:true, preferCanvas:false, zoomSnap:.25}).setView([47.72, 12.9], 10);
+const tiles = {
+  'OpenTopoMap': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {maxZoom:17, subdomains:'abc', attribution:'© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, SRTM | © <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'}),
+  'OpenStreetMap': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'}),
+  'CyclOSM': L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {maxZoom:19, subdomains:'abc', attribution:'© OpenStreetMap | <a href="https://www.cyclosm.org">CyclOSM</a>'}),
+  'Esri műhold': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom:19, attribution:'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics'}),
+};
+// offline alaptérkép
+const B = window.GRAVEL_BASE;
+const offline = L.layerGroup();
+if (B){
+  const cr = L.canvas({padding:.3});
+  L.imageOverlay('assets/hillshade.jpg', B.bounds, {opacity:1, interactive:false, attribution:'Domborzat: SRTM (NASA/USGS) · vektorok: © OpenStreetMap / Overture Maps (ODbL)'}).addTo(offline);
+  B.water.forEach(w => L.polygon(w.c, {renderer:cr, stroke:true, color:'#6d9cc4', weight:.6, fillColor:'#a9cbe6', fillOpacity:.95, interactive:false}).addTo(offline));
+  B.river.forEach(r => L.polyline(r, {renderer:cr, color:'#7aa7cf', weight:1.6, interactive:false}).addTo(offline));
+  const rw = [3.2, 2.6, 1.9, 1.2], rc = ['#c75d3a','#d98a4e','#d9b25e','#ffffff'];
+  [3,2,1,0].forEach(k => B.road.filter(r => r[0]===k).forEach(r => L.polyline(r[1], {renderer:cr, color:rc[k], weight:rw[k], opacity:k===3?.75:.9, interactive:false}).addTo(offline)));
+  B.rail.forEach(r => L.polyline(r, {renderer:cr, color:'#555', weight:1.1, dashArray:'4 3', opacity:.7, interactive:false}).addTo(offline));
+  B.towns.forEach(t => L.marker([t.lat,t.lon], {interactive:false, icon:L.divIcon({className:'townlbl', html:esc(t.n), iconSize:null})}).addTo(offline));
+  B.peaks.forEach(p => L.marker([p.lat,p.lon], {interactive:false, icon:L.divIcon({className:'peaklbl', html:'▲ '+esc(p.n)+' '+p.e, iconSize:null})}).addTo(offline));
+}
+const bases = Object.assign({}, tiles, {'Offline domborzat': offline});
+let baseName = store.get('gr-base') || 'OpenTopoMap';
+if (!navigator.onLine || !bases[baseName]) baseName = navigator.onLine ? 'OpenTopoMap' : 'Offline domborzat';
+bases[baseName].addTo(map);
+map.on('baselayerchange', e => { store.set('gr-base', e.name); $('#netbadge').style.display = 'none'; });
+// ha a csempék nem töltenek (offline / tiltott), váltás az offline rétegre
+let tileErr = 0, switched = false;
+Object.values(tiles).forEach(t => t.on('tileerror', () => {
+  if (switched || !map.hasLayer(t)) return;
+  if (++tileErr >= 6){ switched = true; map.removeLayer(t); offline.addTo(map); const nb=$('#netbadge'); nb.style.display='block'; setTimeout(()=>nb.style.display='none', 6000); }
+}));
+Object.values(tiles).forEach(t => t.on('tileload', () => { tileErr = 0; }));
+
+// jelölők
+const pinIcon = (cls, svg, size=26) => L.divIcon({className:'', html:`<div class="pin ${cls}" style="width:${size}px;height:${size}px">${svg}</div>`, iconSize:[size,size], iconAnchor:[size/2,size/2], popupAnchor:[0,-size/2]});
+const hotelM = L.marker([D.hotel.lat, D.hotel.lon], {icon:pinIcon('hotel', ICON.hotel, 34), zIndexOffset:1000, title:D.hotel.name})
+  .bindPopup(`<b>${esc(D.hotel.name)}</b><br>${esc(D.hotel.addr)}<br><a href="${gmapsPt(D.hotel.lat,D.hotel.lon)}" target="_blank" rel="noopener">Google Maps ↗</a>`).addTo(map);
+const stationL = L.layerGroup(D.stations.map(s => L.marker([s.lat,s.lon], {icon:pinIcon('train', ICON.train, 24), title:s.name})
+  .bindPopup(`<b>🚆 ${esc(s.name)}</b><br>${s.min ? `~${s.min} perc Bad Reichenhall Hbf-ről` : 'Bad Reichenhall főpályaudvar (≈0,5 km a szállodától)'}<br><small>Kerékpárjegy szükséges.</small><br><a href="${gmapsPt(s.lat,s.lon)}" target="_blank" rel="noopener">Google Maps ↗</a>`))).addTo(map);
+const parkL = L.layerGroup(D.parkings.map(p => L.marker([p.lat,p.lon], {icon:pinIcon('park', ICON.park, 22), title:p.name})
+  .bindPopup(`<b>🅿️ ${esc(p.name)}</b><br>Autóval ~${p.min} perc a szállodától<br><a href="${gmapsNav(p.lat,p.lon,'driving')}" target="_blank" rel="noopener">Navigáció Google Maps-ben ↗</a>`))).addTo(map);
+L.control.layers(bases, {'🚆 Vasútállomások': stationL, '🅿️ Parkolók': parkL}, {collapsed:true}).addTo(map);
+L.control.scale({imperial:false}).addTo(map);
+const zcls = () => map.getContainer().classList.toggle('z-low', map.getZoom() < 11.5);
+map.on('zoomend', zcls); zcls();
+
+// útvonalak
+const lines = {};
+const dcol = r => css(DIFFVAR[r.difficulty]);
+R.forEach(r => {
+  const ll = r.track.map(p => [p[0], p[1]]);
+  const casing = L.polyline(ll, {color:'#fff', weight:7, opacity:.55, interactive:false});
+  const line = L.polyline(ll, {color:dcol(r), weight:4, opacity:.9});
+  line.on('click', () => select(r.id, true));
+  line.on('mouseover', () => hover(r.id, true)); line.on('mouseout', () => hover(r.id, false));
+  line.on('mousemove', e => { if (sel && sel.id === r.id) cursorFromMap(e.latlng); });
+  line.bindTooltip(`${esc(r.name)} · ${fmt(r.km)} km · ${fmt0(r.up)} m`, {sticky:true, direction:'top', opacity:.95});
+  lines[r.id] = {line, casing, group:L.layerGroup([casing, line]).addTo(map)};
+});
+function restyle(){
+  R.forEach(r => {
+    const L_ = lines[r.id], vis = visible.has(r.id), act = sel && sel.id === r.id, dim = sel && !act;
+    if (!vis && !act){ map.removeLayer(L_.group); return; }
+    if (!map.hasLayer(L_.group)) L_.group.addTo(map);
+    L_.line.setStyle({color:dcol(r), weight: act ? 6 : (hovered===r.id ? 6 : 4), opacity: dim ? .28 : .92});
+    L_.casing.setStyle({weight: act ? 10 : 7, opacity: dim ? .15 : .55});
+    if (act || hovered===r.id) { L_.casing.bringToFront(); L_.line.bringToFront(); }
+  });
+}
+let hovered = null;
+function hover(id, on){
+  hovered = on ? id : null; restyle();
+  document.querySelectorAll('.card').forEach(c => c.classList.toggle('hover', on && c.dataset.id === id));
+}
+
+/* ---------------- szűrők ---------------- */
+const F = {dur:'all', diff:new Set(['konnyu','kozepes','nehez']), start:new Set(), creative:false, km:150, up:2500, gr:0, sort:'rating'};
+let visible = new Set(R.map(r => r.id));
+document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', () => {
+  const f = ch.dataset.f, v = ch.dataset.v;
+  if (f === 'dur'){ F.dur = v; document.querySelectorAll('[data-f=dur]').forEach(c => c.setAttribute('aria-pressed', c.dataset.v===v)); }
+  else if (f === 'creative'){ F.creative = !F.creative; ch.setAttribute('aria-pressed', F.creative); }
+  else { const s = F[f]; s.has(v) ? s.delete(v) : s.add(v); ch.setAttribute('aria-pressed', s.has(v)); }
+  apply();
+}));
+[['fkm','km','vkm',v=>v+' km'],['fup','up','vup',v=>fmt0(v)+' m'],['fgr','gr','vgr',v=>v+'%']].forEach(([id,k,out,f]) => {
+  const el = $('#'+id); const upd = () => { F[k] = +el.value; $('#'+out).textContent = f(el.value); };
+  el.addEventListener('input', () => { upd(); apply(); }); upd();
+});
+$('#sort').onchange = e => { F.sort = e.target.value; apply(); };
+$('#reset').onclick = () => {
+  F.dur='all'; F.diff=new Set(['konnyu','kozepes','nehez']); F.start=new Set(); F.creative=false;
+  document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.f==='diff' || (c.dataset.f==='dur' && c.dataset.v==='all')));
+  $('#fkm').value=150; $('#fup').value=2500; $('#fgr').value=0; ['fkm','fup','fgr'].forEach(i => $('#'+i).dispatchEvent(new Event('input')));
+};
+$('#ftoggle').onclick = () => { const f = $('#filters'); f.classList.toggle('open'); $('#ftoggle').setAttribute('aria-expanded', f.classList.contains('open')); };
+
+function pass(r){
+  if (F.dur === 'half' && !r.halfday) return false;
+  if (F.dur === 'full' && r.halfday) return false;
+  if (!F.diff.has(r.difficulty)) return false;
+  if (F.creative && !r.creative) return false;
+  if (F.start.size){ const modes = new Set(r.starts.map(s => s.mode)); for (const m of F.start) if (!modes.has(m)) return false; }
+  return r.km <= F.km && r.up <= F.up && r.gravel >= F.gr;
+}
+const sorters = {rating:(a,b)=>b.rating-a.rating||a.km-b.km, km:(a,b)=>a.km-b.km, up:(a,b)=>a.up-b.up, gravel:(a,b)=>b.gravel-a.gravel, hotel:(a,b)=>a.hotelKm-b.hotelKm||a.km-b.km, name:(a,b)=>a.name.localeCompare(b.name,'hu')};
+function sbarHTML(s){ return `<div class="sbar">${SURF.map(([k,,v]) => s[k] > 0 ? `<i style="width:${s[k]}%;background:var(${v})" title="${k}"></i>` : '').join('')}</div>`; }
+function startIcons(r){ return r.starts.map(s => ({hotel:'🏨', car:'🚗', train:'🚆'})[s.mode]).join(' '); }
+function apply(){
+  const rs = R.filter(pass).sort(sorters[F.sort]);
+  visible = new Set(rs.map(r => r.id));
+  $('#count').textContent = `${rs.length} / ${R.length} útvonal`;
+  $('#fcount').textContent = `${rs.length} / ${R.length}`;
+  $('#list').innerHTML = rs.length ? rs.map(r => `
+    <article class="card${sel&&sel.id===r.id?' active':''}" data-id="${r.id}" tabindex="0">
+      <span class="stripe" style="background:var(${DIFFVAR[r.difficulty]})"></span>
+      <span class="stars" title="Értékelés: ${r.rating}/5">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
+      <h3>${esc(r.name)}</h3>
+      <div class="badges">
+        <span class="badge d-${r.difficulty}">${DIFF[r.difficulty]}</span>
+        <span class="badge">${r.halfday?'Félnapos':'Egész napos'}</span>
+        ${r.creative?'<span class="badge cre">✦ kreatív</span>':''}
+        <span class="badge gen" title="Saját gravel-routerrel, OSM-utakon generálva">generált nyomvonal</span>
+        <span class="badge" title="Indulási módok">${startIcons(r)}</span>
+      </div>
+      <div class="meta"><span>${fmt(r.km)} km</span><span>↑ ${fmt0(r.up)} m</span><span>⏱ ${hTime(r.timeH)}</span><span>▲ ${fmt0(r.maxEle)} m</span><span>murva ${fmt0(r.gravel)}%</span></div>
+      <div style="margin-top:8px">${sbarHTML(r.surface)}</div>
+    </article>`).join('') : '<div class="empty">Nincs a szűrőknek megfelelő útvonal.<br><button class="linkbtn" onclick="document.getElementById(\'reset\').click()">Szűrők törlése</button></div>';
+  document.querySelectorAll('.card').forEach(c => {
+    c.onclick = () => select(c.dataset.id, true);
+    c.onkeydown = e => { if (e.key === 'Enter') select(c.dataset.id, true); };
+    c.onmouseenter = () => hover(c.dataset.id, true); c.onmouseleave = () => hover(c.dataset.id, false);
+  });
+  restyle();
+}
+
+/* ---------------- adatlap ---------------- */
+let sel = null, hlLayer = L.layerGroup().addTo(map), cursorM = null;
+const detail = $('#detail');
+function select(id, zoom){
+  const r = R.find(x => x.id === id); if (!r) return;
+  sel = r;
+  if (location.hash.slice(1) !== id) history.replaceState(null, '', '#' + id);
+  document.querySelectorAll('.card').forEach(c => c.classList.toggle('active', c.dataset.id === id));
+  restyle();
+  hlLayer.clearLayers();
+  r.highlights.forEach(h => L.marker([h.lat,h.lon], {icon:pinIcon('hl', `<span style="color:${HLCOL[h.type]||'#555'}">${ICON[h.type]||''}</span>`, 26), title:h.name})
+    .bindPopup(`<b>${esc(h.name)}</b><br>${fmt(h.km)}. km<br><a href="${gmapsPt(h.lat,h.lon)}" target="_blank" rel="noopener">Google Maps ↗</a>`).addTo(hlLayer));
+  const st = r.track[0], en = r.track[r.track.length-1];
+  L.circleMarker([st[0],st[1]], {radius:7, color:'#fff', weight:2, fillColor:'#1f8a4c', fillOpacity:1}).bindTooltip('Start').addTo(hlLayer);
+  if (!r.loop) L.circleMarker([en[0],en[1]], {radius:7, color:'#fff', weight:2, fillColor:'#c0392f', fillOpacity:1}).bindTooltip('Cél').addTo(hlLayer);
+  cursorM = L.circleMarker([st[0],st[1]], {radius:8, color:'#fff', weight:3, fillColor:css('--glow'), fillOpacity:1, interactive:false});
+  renderDetail(r);
+  if (zoom){
+    const b = lines[id].line.getBounds();
+    const wide = innerWidth > 860;
+    map.flyToBounds(b, {paddingTopLeft:[30,30], paddingBottomRight:[wide ? Math.min(540, innerWidth*.45) : 30, 30], duration:.6});
+  }
+}
+function closeDetail(){
+  sel = null; detail.classList.remove('open'); $('.mapwrap').classList.remove('dopen','dhidden'); hlLayer.clearLayers(); if (cursorM) map.removeLayer(cursorM);
+  history.replaceState(null, '', location.pathname + location.search);
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active')); restyle();
+}
+function sourceLinks(r){
+  const a = [];
+  const i = r.inspired || {};
+  if (i.komoot) a.push(`<a class="btn" href="https://www.komoot.com/tour/${i.komoot}" target="_blank" rel="noopener">komoot-forrástúra (${i.km} km) ↗</a>`);
+  if (i.bergfex) a.push(`<a class="btn" href="https://www.bergfex.at/sommer/salzburg/touren/mountainbike/${i.bergfex}/" target="_blank" rel="noopener">bergfex ↗</a>`);
+  if (i.guide) a.push(`<a class="btn" href="${i.guide.includes('Thumsee') ? 'https://www.komoot.com/guide/3459999/gravelbiken-around-thumsee' : 'https://www.komoot.com/guide/3441197/gravelbiken-rund-um-bad-reichenhall'}" target="_blank" rel="noopener">komoot guide ↗</a>`);
+  if (i.wossa) a.push(`<a class="btn" href="https://thomaskargl.at/" target="_blank" rel="noopener">WOSSA (thomaskargl.at) ↗</a>`);
+  return a.join('');
+}
+function renderDetail(r){
+  const lc = r.longestClimb, sp = r.steepest;
+  detail.innerHTML = `
+  <div class="dhead">
+    <button class="close" id="dclose" aria-label="Bezár"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <h2>${esc(r.name)}</h2>
+    <div class="badges" style="margin:4px 0 0">
+      <span class="badge d-${r.difficulty}">${DIFF[r.difficulty]}</span>
+      <span class="badge">${r.halfday?'Félnapos':'Egész napos'}</span>
+      ${r.creative?'<span class="badge cre">✦ kreatív</span>':''}
+      <span class="badge gen">generált nyomvonal</span>
+      <span class="badge" style="color:var(--glow)">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)} ${r.rating}/5</span>
+      <span class="badge">${r.loop ? 'körtúra' : 'egyirányú'}</span>
+    </div>
+  </div>
+  <div class="dbody">
+    <p class="desc">${esc(r.desc)}</p>
+    <div class="stats">
+      <div class="stat"><small>Táv</small><b>${fmt(r.km)}<span>km</span></b></div>
+      <div class="stat"><small>Szint fel / le</small><b>${fmt0(r.up)}<span>m</span></b><em>le: ${fmt0(r.down)} m</em></div>
+      <div class="stat"><small>Becsült idő</small><b>${hTime(r.timeH)}<span>óra</span></b><em>pihenő nélkül</em></div>
+      <div class="stat"><small>Max magasság</small><b>${fmt0(r.maxEle)}<span>m</span></b><em>min: ${fmt0(r.minEle)} m</em></div>
+      <div class="stat"><small>Murva / földút</small><b>${fmt0(r.gravel)}<span>%</span></b></div>
+      <div class="stat"><small>Szállodától</small><b>${fmt(r.hotelKm)}<span>km</span></b><em>${r.fromHotel?'szállodából indítható':'a start távolsága'}</em></div>
+    </div>
+    <h4>Burkolat</h4>
+    <div class="surface">${sbarHTML(r.surface)}
+      <div class="slegend">${SURF.map(([k,l,v]) => `<span><i style="background:var(${v})"></i>${l} <b>${fmt(r.surface[k])}%</b></span>`).join('')}</div></div>
+    <h4>Magassági profil</h4>
+    <div class="profile" id="profile"><canvas id="pcv"></canvas><div class="ptip" id="ptip"></div>
+      <div class="gradeleg"><span><i style="background:#5aa469"></i>&lt;3%</span><span><i style="background:#c9c23e"></i>3–6%</span><span><i style="background:#e39a3b"></i>6–10%</span><span><i style="background:#d6523c"></i>10–14%</span><span><i style="background:#8e1f2a"></i>&gt;14%</span><span style="margin-left:auto">sáv: burkolat</span></div>
+    </div>
+    <div class="climbs">
+      ${lc ? `<div class="stat"><small>Leghosszabb emelkedő</small><b>${fmt0(lc.gain)}<span>m</span></b><em>${fmt(lc.len)} km · átl. ${fmt(lc.grade)}% · ${fmt(lc.km)}. km-től</em></div>` : ''}
+      <div class="stat"><small>Legmeredekebb 500 m</small><b>${fmt(sp.grade)}<span>%</span></b><em>${fmt(sp.km)}. km-nél</em></div>
+    </div>
+    <h4>Kiemelt pontok</h4>
+    <ul class="hls">${r.highlights.map((h,i) => `<li data-i="${i}"><span class="ic" style="color:${HLCOL[h.type]||'#555'}">${ICON[h.type]||''}</span><span>${esc(h.name)}</span><span class="km">${fmt(h.km)} km</span></li>`).join('')}</ul>
+    <h4>Indulási lehetőségek</h4>
+    <div class="starts">${r.starts.map(s => {
+      const col = {hotel:'var(--glow)', car:'#3c6fb6', train:'#2f5d8a'}[s.mode];
+      let extra = '';
+      if (s.mode === 'car') extra = `<small>Parkoló: <a href="${gmapsNav(s.lat,s.lon,'driving')}" target="_blank" rel="noopener">${esc(s.name)} – navigáció ↗</a>. Oda és vissza ugyanide.</small>`;
+      if (s.mode === 'train') extra = `<small>${s.note ? esc(s.note)+' ' : ''}<a href="${gmapsPt(s.lat,s.lon)}" target="_blank" rel="noopener">Állomás a térképen ↗</a><br>⚠️ Kerékpárjegy kell (DB Fahrradtageskarte Bayern; osztrák szakaszon ÖBB/S-Bahn Fahrrad-Tageskarte). Csúcsidőben korlátozott hely.</small>`;
+      if (s.mode === 'hotel') extra = `<small><a href="${gmapsNav(r.track[0][0],r.track[0][1],'bicycling')}" target="_blank" rel="noopener">Start a térképen ↗</a></small>`;
+      return `<div class="start"><span class="ic" style="background:${col}">${ICON[s.mode]}</span><p>${esc(s.text)}${extra}</p></div>`; }).join('')}</div>
+    <h4>Októberi figyelmeztetések</h4>
+    <div class="warn"><ul>${r.warn.map(w => `<li>${esc(w)}</li>`).join('')}
+      <li>Napnyugta ~18:50 (okt. eleje) – első/hátsó lámpa, réteges ruha, és ${r.maxEle>1100?'<b>1100–1200 m felett hó/jég is lehet</b>':'reggel köd, nedves avar'}.</li></ul></div>
+    <h4>Képek a környékről</h4>
+    <div class="photos" id="photos"><div class="photonote">Fotók betöltése a Wikimedia Commonsról…</div></div>
+    <div class="actions">
+      <a class="btn primary" href="gpx/${r.id}.gpx" download="${r.id}.gpx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>GPX letöltés</a>
+      <a class="btn" href="${r.gmaps}" target="_blank" rel="noopener">Google Maps ↗</a>
+      ${sourceLinks(r)}
+    </div>
+    <p class="gennote">Generált nyomvonal: saját gravel-útvonaltervező az OpenStreetMap úthálózatán (Overture Maps), magasság SRTM-ből. Indulás előtt nézd át a térképen, terepen tartsd be a táblákat.</p>
+  </div>`;
+  detail.classList.add('open'); $('.mapwrap').classList.add('dopen'); $('.mapwrap').classList.remove('dhidden');
+  $('#dclose').onclick = closeDetail;
+  detail.querySelectorAll('.hls li').forEach(li => li.onclick = () => { const h = r.highlights[+li.dataset.i]; map.flyTo([h.lat,h.lon], 14, {duration:.5}); if (innerWidth<=860){ detail.classList.remove('open'); $('.mapwrap').classList.add('dhidden'); scrollTo({top:0}); } });
+  detail.querySelector('.dbody').scrollTop = 0;
+  requestAnimationFrame(() => { setupProfile(r); });
+  loadPhotos(r);
+}
+
+/* ---------------- magassági profil ---------------- */
+const gradeCol = g => g < 3 ? '#5aa469' : g < 6 ? '#c9c23e' : g < 10 ? '#e39a3b' : g < 14 ? '#d6523c' : '#8e1f2a';
+let P = null;
+function setupProfile(r){
+  const cv = $('#pcv'); if (!cv) return;
+  const t = r.track, n = t.length;
+  // meredekség ~200 m-es ablakkal
+  const gr = new Array(n).fill(0);
+  for (let i = 0; i < n; i++){
+    let j = i; while (j < n-1 && (t[j][3]-t[i][3]) < .2) j++;
+    const dk = (t[j][3]-t[i][3])*1000; gr[i] = dk > 30 ? (t[j][2]-t[i][2])/dk*100 : (i ? gr[i-1] : 0);
+  }
+  P = {r, cv, gr, idx:-1};
+  drawProfile();
+  const move = e => {
+    const rect = cv.getBoundingClientRect(); const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const km = (x - P.pad.l) / (rect.width - P.pad.l - P.pad.r) * P.total;
+    setCursor(nearestByKm(km));
+    if (e.touches) e.preventDefault();
+  };
+  cv.onmousemove = move; cv.ontouchmove = move; cv.ontouchstart = move;
+  cv.onmouseleave = () => { setCursor(-1); };
+  cv.onclick = () => { if (P.idx >= 0){ const p = t[P.idx]; map.panTo([p[0],p[1]]); } };
+}
+function nearestByKm(km){
+  const t = P.r.track; let lo = 0, hi = t.length - 1;
+  if (km <= 0) return 0; if (km >= t[hi][3]) return hi;
+  while (hi - lo > 1){ const m = (lo+hi) >> 1; if (t[m][3] < km) lo = m; else hi = m; }
+  return (km - t[lo][3] < t[hi][3] - km) ? lo : hi;
+}
+function drawProfile(){
+  if (!P || !P.cv.isConnected) return;
+  const {cv, r, gr} = P, t = r.track;
+  const dpr = devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  cv.width = W*dpr; cv.height = H*dpr;
+  const c = cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,W,H);
+  const pad = {l:40, r:10, t:10, b:30}; P.pad = pad;
+  const total = t[t.length-1][3]; P.total = total;
+  let zmin = Math.min(...t.map(p=>p[2])), zmax = Math.max(...t.map(p=>p[2]));
+  const span = Math.max(150, zmax - zmin); zmin = Math.floor((zmin - span*.08)/50)*50; zmax = Math.ceil((zmax + span*.08)/50)*50;
+  const X = km => pad.l + km/total*(W-pad.l-pad.r), Y = z => pad.t + (1-(z-zmin)/(zmax-zmin))*(H-pad.t-pad.b-10);
+  P.X = X; P.Y = Y;
+  const ink3 = css('--ink-3'), line = css('--line');
+  c.font = '10.5px ' + css('--f-mono'); c.fillStyle = ink3; c.strokeStyle = line; c.lineWidth = 1;
+  const zstep = (zmax-zmin) > 1200 ? 400 : (zmax-zmin) > 600 ? 200 : 100;
+  for (let z = Math.ceil(zmin/zstep)*zstep; z <= zmax; z += zstep){ c.beginPath(); c.moveTo(pad.l, Y(z)+.5); c.lineTo(W-pad.r, Y(z)+.5); c.stroke(); c.fillText(z, 4, Y(z)+3); }
+  const kstep = total > 100 ? 20 : total > 50 ? 10 : 5;
+  c.textAlign = 'center';
+  for (let k = 0; k <= total; k += kstep) c.fillText(k + (k===0?'':''), X(k), H - pad.b + 13);
+  c.textAlign = 'right'; c.fillText('km', W - pad.r, H - pad.b + 13); c.textAlign = 'left';
+  // meredekség szerint színezett terület
+  for (let i = 0; i < t.length-1; i++){
+    c.fillStyle = gradeCol(gr[i]);
+    c.beginPath(); c.moveTo(X(t[i][3]), Y(zmin)); c.lineTo(X(t[i][3]), Y(t[i][2])); c.lineTo(X(t[i+1][3]), Y(t[i+1][2])); c.lineTo(X(t[i+1][3]), Y(zmin)); c.closePath(); c.fill();
+  }
+  c.beginPath(); t.forEach((p,i) => i ? c.lineTo(X(p[3]),Y(p[2])) : c.moveTo(X(p[3]),Y(p[2]))); c.strokeStyle = css('--ink'); c.lineWidth = 1.4; c.stroke();
+  // burkolati sáv
+  const by = H - pad.b - 6;
+  r.surfBands.forEach(([a,b,k]) => { c.fillStyle = css(SURF.find(s=>s[0]===k)[2]); c.fillRect(X(a), by, Math.max(1, X(b)-X(a)), 6); });
+  // kiemelt pontok
+  c.fillStyle = css('--ink-2');
+  r.highlights.forEach(h => { if (h.off < 600){ c.beginPath(); c.arc(X(h.km), by - 4, 2.2, 0, 7); c.fill(); } });
+  if (P.idx >= 0){
+    const p = t[P.idx]; c.strokeStyle = css('--glow'); c.lineWidth = 1.5; c.beginPath(); c.moveTo(X(p[3]), pad.t); c.lineTo(X(p[3]), by); c.stroke();
+    c.fillStyle = css('--glow'); c.beginPath(); c.arc(X(p[3]), Y(p[2]), 4, 0, 7); c.fill();
+  }
+}
+function setCursor(i){
+  if (!P) return; P.idx = i; drawProfile();
+  const tip = $('#ptip');
+  if (i < 0){ tip.style.display = 'none'; if (cursorM) map.removeLayer(cursorM); return; }
+  const p = P.r.track[i];
+  tip.style.display = 'block'; tip.style.left = (P.X(p[3]) + 6) + 'px'; tip.style.top = (P.Y(p[2]) + 8) + 'px';
+  tip.textContent = `${fmt(p[3])} km · ${fmt0(p[2])} m · ${P.gr[i] >= 0 ? '+' : ''}${fmt(P.gr[i])}%`;
+  if (cursorM){ cursorM.setLatLng([p[0],p[1]]); if (!map.hasLayer(cursorM)) cursorM.addTo(map); }
+}
+function cursorFromMap(ll){
+  if (!P) return; const t = P.r.track; let best = 0, bd = Infinity;
+  for (let i = 0; i < t.length; i++){ const d = (t[i][0]-ll.lat)**2 + ((t[i][1]-ll.lng)*.67)**2; if (d < bd){ bd = d; best = i; } }
+  setCursor(best);
+}
+addEventListener('resize', () => { if (P) drawProfile(); });
+
+/* ---------------- fotók (Wikimedia Commons) ---------------- */
+const strip = h => { const d = document.createElement('div'); d.innerHTML = h || ''; return (d.textContent || '').trim().replace(/\s+/g,' '); };
+async function commons(term){
+  const key = 'gr-wm2-' + term; const cached = store.get(key);
+  if (cached) try { return JSON.parse(cached); } catch(e){}
+  const u = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=6'
+    + '&gsrsearch=' + encodeURIComponent(term + ' filetype:bitmap') + '&prop=imageinfo&iiprop=url|extmetadata|mime&iiurlwidth=520';
+  const res = await fetch(u); if (!res.ok) throw new Error(res.status);
+  const j = await res.json();
+  const pages = Object.values((j.query || {}).pages || {}).sort((a,b) => a.index - b.index);
+  const out = pages.map(p => { const ii = (p.imageinfo||[])[0]; if (!ii || !/jpeg|png/.test(ii.mime)) return null; const m = ii.extmetadata || {};
+    return {thumb:ii.thumburl, page:ii.descriptionurl, title:p.title.replace(/^File:/,'').replace(/\.[a-z]+$/i,''), author:strip((m.Artist||{}).value).slice(0,60) || 'ismeretlen', lic:strip((m.LicenseShortName||{}).value) || 'lásd a leírólapot'}; }).filter(Boolean);
+  store.set(key, JSON.stringify(out)); return out;
+}
+async function loadPhotos(r){
+  const box = $('#photos'); const id = r.id;
+  try {
+    const seen = new Set(), pics = [];
+    for (const term of r.photos){
+      if (pics.length >= 4) break;
+      const res = await commons(term);
+      for (const p of res){ if (!seen.has(p.page)){ seen.add(p.page); pics.push(p); break; } }
+    }
+    if (pics.length < 4) for (const term of r.photos){ const res = await commons(term); for (const p of res){ if (pics.length >= 4) break; if (!seen.has(p.page)){ seen.add(p.page); pics.push(p); } } }
+    if (!sel || sel.id !== id) return;
+    box.innerHTML = pics.length ? pics.slice(0,4).map(p => `<figure class="photo"><a href="${esc(p.page)}" target="_blank" rel="noopener"><img loading="lazy" src="${esc(p.thumb)}" alt="${esc(p.title)}"></a><figcaption>${esc(p.title)}<br>© ${esc(p.author)} · ${esc(p.lic)} · Wikimedia Commons</figcaption></figure>`).join('')
+      : '<div class="photonote">Nem találtam szabad licencű képet.</div>';
+  } catch(e){
+    if (sel && sel.id === id) box.innerHTML = `<div class="photonote">A fotók a Wikimedia Commonsról töltődnek be – ehhez internet kell. Keresd: ${r.photos.map(t => `<a href="https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(t)}&title=Special:MediaSearch&type=image" target="_blank" rel="noopener">${esc(t)}</a>`).join(', ')}.</div>`;
+  }
+}
+
+$('#backDetail').onclick = () => { detail.classList.add('open'); $('.mapwrap').classList.remove('dhidden'); };
+/* ---------------- indítás ---------------- */
+apply();
+const all = L.featureGroup(Object.values(lines).map(l => l.line));
+map.fitBounds(all.getBounds(), {padding:[20,20]});
+const h0 = location.hash.slice(1); if (h0 && R.some(r => r.id === h0)) setTimeout(() => select(h0, true), 300);
+addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h && (!sel || sel.id !== h)) select(h, true); });
+addEventListener('keydown', e => { if (e.key === 'Escape'){ if ($('#modal').classList.contains('open')) $('#modal').classList.remove('open'); else if (sel) closeDetail(); } });
+})();
+</script>
+</body>
+</html>
