@@ -642,11 +642,27 @@ function setupProfile(r){
     const rect = cv.getBoundingClientRect(); const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
     const km = (x - P.pad.l) / (rect.width - P.pad.l - P.pad.r) * P.total;
     setCursor(nearestByKm(km));
-    if (e.touches) e.preventDefault();
+    if (e.type === 'touchmove') e.preventDefault();
   };
   cv.onmousemove = move; cv.ontouchmove = move; cv.ontouchstart = move;
   cv.onmouseleave = () => { setCursor(-1); };
-  cv.onclick = () => { if (P.idx >= 0){ const p = t[P.idx]; map.panTo([p[0],p[1]]); } };
+  cv.onclick = e => {
+    const rect = cv.getBoundingClientRect();
+    const km = (e.clientX - rect.left - P.pad.l) / (rect.width - P.pad.l - P.pad.r) * P.total;
+    const i = P.idx >= 0 ? P.idx : nearestByKm(km); setCursor(i);
+    centerOn(t[i][0], t[i][1]);
+  };
+}
+// pont a térkép LÁTHATÓ részének közepére (asztalon az adatlap eltakarja a jobb oldalt; mobilon átvált a térképre)
+function centerOn(lat, lon){
+  const z = Math.max(map.getZoom(), 13);
+  if (innerWidth <= 860){
+    detail.classList.remove('open'); $('.mapwrap').classList.add('dhidden'); scrollTo({top:0});
+    map.setView([lat, lon], z, {animate:true}); return;
+  }
+  const covered = detail.classList.contains('open') ? Math.min(detail.offsetWidth, map.getSize().x * .9) : 0;
+  const pt = map.project([lat, lon], z).add([covered / 2, 0]);
+  map.setView(map.unproject(pt, z), z, {animate:true});
 }
 function nearestByKm(km){
   const t = P.r.track; let lo = 0, hi = t.length - 1;
