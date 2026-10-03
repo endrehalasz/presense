@@ -190,6 +190,9 @@ input[type=range]{width:100%;accent-color:var(--glow)}
 .crow .cnum{width:22px;height:22px;font-size:11px}
 .crow .m{font:500 12px var(--f-mono);color:var(--ink-2);text-align:right}
 .crow canvas{grid-column:1/-1;width:100%;height:100px}
+.seglbl{font:700 11px/1.15 var(--f-mono);padding:2px 6px;border-radius:6px;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);white-space:nowrap}
+.seglbl small{font-weight:500;font-size:9.5px;opacity:.9}
+.seglbl.start{background:var(--card);color:var(--ink);border-color:var(--line)}
 .cpnote{font-size:12px;color:var(--ink-3);margin:6px 0 0}
 @media (max-width:860px){.cfacts{grid-template-columns:repeat(3,auto)}}
 /* ---------- időjárás ---------- */
@@ -542,7 +545,7 @@ function select(id, zoom){
   }
 }
 function closeDetail(){
-  climbLayer.clearLayers(); sel = null; detail.classList.remove('open'); $('.mapwrap').classList.remove('dopen','dhidden'); hlLayer.clearLayers(); if (cursorM) map.removeLayer(cursorM);
+  climbLayer.clearLayers(); segLabels = []; sel = null; detail.classList.remove('open'); $('.mapwrap').classList.remove('dopen','dhidden'); hlLayer.clearLayers(); if (cursorM) map.removeLayer(cursorM);
   history.replaceState(null, '', location.pathname + location.search);
   document.querySelectorAll('.card').forEach(c => c.classList.remove('active')); restyle();
 }
@@ -666,6 +669,7 @@ function centerOn(lat, lon){
   const pt = map.project([lat, lon], z).add([covered / 2, 0]);
   map.setView(map.unproject(pt, z), z, {animate:true});
 }
+function nearestByKmIn(t, km){ let lo = 0, hi = t.length - 1; if (km <= t[0][3]) return 0; if (km >= t[hi][3]) return hi; while (hi - lo > 1){ const m = (lo+hi) >> 1; if (t[m][3] < km) lo = m; else hi = m; } return (km - t[lo][3] < t[hi][3] - km) ? lo : hi; }
 function nearestByKm(km){
   const t = P.r.track; let lo = 0, hi = t.length - 1;
   if (km <= 0) return 0; if (km >= t[hi][3]) return hi;
@@ -784,6 +788,15 @@ function climbsHTML(r){
     ${other.length ? `<div style="margin-top:6px">${other.map(c => `<div class="crow" data-cl="${c.n}"><span class="cnum">${c.n}</span><span>${fmt(c.s)}–${fmt(c.e)} km</span><span class="m">${fmt(c.len)} km · +${fmt0(c.gain)} m · ${fmt(c.avg)}% (max ${fmt0(c.max)}%)</span></div>`).join('')}</div>` : ''}
     <p class="cpnote">Nehéz emelkedő: legalább 250 m szint („hosszú”) és/vagy 8% feletti átlag legalább 50 m szinttel („meredek”). Max: legmeredekebb 300 m. Kattints egy emelkedőre: kiemeli a térképen és a profilon. A magasság SRTM-ből becsült.</p>`;
 }
+// emelkedő szakaszokra bontása (a kis profil és a térkép ugyanezt használja)
+function climbSegs(c){
+  const pr = c.prof, n = pr.length, Lm = c.len*1000;
+  const seg = Lm > 6000 ? 1000 : Lm > 2500 ? 500 : 200;
+  const cuts = []; for (let m = 0; m < Lm - 1; m += seg) cuts.push(m);
+  if (cuts.length > 1 && Lm - cuts[cuts.length-1] < seg*.45) cuts.pop();
+  return cuts.map((m, k) => { const m2 = k + 1 < cuts.length ? cuts[k+1] : Lm, i0 = Math.round(m/100), i1 = Math.min(n-1, Math.round(m2/100));
+    return {m0:m, m1:m2, i0, i1, gr:(pr[i1] - pr[i0]) / Math.max(1, (m2 - m)) * 100}; });
+}
 function drawClimb(cv, c){
   const dpr = devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight; if (!W) return;
   cv.width = W*dpr; cv.height = H*dpr; const g = cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0);
@@ -791,13 +804,8 @@ function drawClimb(cv, c){
   const pad = {l:34, r:8, t:16, b:18};
   const zmin = Math.floor((c.bot - 10)/20)*20, zmax = Math.ceil((c.top + 10)/20)*20;
   const X = m => pad.l + m/Lm*(W-pad.l-pad.r), Y = z => pad.t + (1-(z-zmin)/(zmax-zmin))*(H-pad.t-pad.b);
-  const seg = Lm > 6000 ? 1000 : Lm > 2500 ? 500 : 200;  // színezett szakaszok hossza
   g.font = '500 9.5px ' + css('--f-mono');
-  const cuts = []; for (let m = 0; m < Lm - 1; m += seg) cuts.push(m);
-  if (cuts.length > 1 && Lm - cuts[cuts.length-1] < seg*.45) cuts.pop();
-  cuts.forEach((m, k) => {
-    const m2 = k + 1 < cuts.length ? cuts[k+1] : Lm, i0 = Math.round(m/100), i1 = Math.min(n-1, Math.round(m2/100));
-    const gr = (pr[i1] - pr[i0]) / Math.max(1, (m2 - m)) * 100;
+  climbSegs(c).forEach(({m0:m, m1:m2, i0, i1, gr}) => {
     g.fillStyle = gradeCol(gr); g.beginPath(); g.moveTo(X(m), Y(zmin));
     for (let i = i0; i <= i1; i++) g.lineTo(X(Math.min(Lm, i*100)), Y(pr[i]));
     g.lineTo(X(m2), Y(zmin)); g.closePath(); g.fill();
@@ -809,23 +817,51 @@ function drawClimb(cv, c){
   for (let m = 0; m <= Lm; m += step) if (X(m) < W - 26) g.fillText(fmt(m/1000, m % 1000 ? 1 : 0), X(m), H - 4);
   g.textAlign = 'right'; g.fillText('km', W - 2, H - 4);
 }
+let segLabels = [];
+// szakaszcímkék a képernyőn látható hosszhoz igazítva: hosszú szakasznál % + km, rövidnél csak %, nagyon rövidnél nincs
+function updateSegLabels(){
+  let lastPt = null;
+  segLabels.forEach(s => {
+    const pa = map.latLngToContainerPoint(s.a), pb = map.latLngToContainerPoint(s.b), px = pa.distanceTo(pb);
+    const mp = pa.add(pb).divideBy(2), crowded = lastPt && lastPt.distanceTo(mp) < 34;
+    const txt = s.gr >= 10 || s.gr <= 0 ? '#fff' : '#1d1406';
+    const html = px < 22 || crowded ? '' : `<div class="seglbl" style="background:${s.gc};color:${txt}">${Math.round(s.gr)}%${px >= 58 ? ` <small>${s.len < 1 ? fmt0(s.len*1000) + ' m' : fmt(s.len, 1) + ' km'}</small>` : ''}</div>`;
+    if (html) lastPt = mp;
+    s.m.setIcon(L.divIcon({className:'', iconSize:null, iconAnchor:[-9, 9], html}));
+  });
+}
+map.on('zoomend', () => { if (segLabels.length) updateSegLabels(); });
 function showClimb(r, n, zoom){
   const c = r.climbs.find(x => x.n === n); if (!c) return;
   P && (P.climb = n); drawProfile();
   document.querySelectorAll('[data-cl]').forEach(el => el.classList.toggle('on', +el.dataset.cl === n));
-  climbLayer.clearLayers();
+  climbLayer.clearLayers(); segLabels = [];
   const pts = r.track.filter(p => p[3] >= c.s - .01 && p[3] <= c.e + .01).map(p => [p[0], p[1]]);
   if (pts.length > 1){
     const col = c.hard ? css('--hard') : css('--medium');
-    L.polyline(pts, {color:'#fff', weight:12, opacity:.8, interactive:false}).addTo(climbLayer);
-    L.polyline(pts, {color:col, weight:7, opacity:1, interactive:false}).addTo(climbLayer);
+    L.polyline(pts, {color:'#fff', weight:13, opacity:.9, interactive:false}).addTo(climbLayer);
+    // pont a nyomvonalon adott km-nél (interpolálva)
+    const at = km => { const t = r.track; let i = nearestByKmIn(t, km); const a = t[Math.max(0, t[i][3] > km ? i-1 : i)], b = t[Math.min(t.length-1, t[i][3] > km ? i : i+1)];
+      const f = b[3] > a[3] ? (km - a[3]) / (b[3] - a[3]) : 0; return [a[0] + (b[0]-a[0])*f, a[1] + (b[1]-a[1])*f]; };
+    segLabels = [];
+    climbSegs(c).forEach(sg => {
+      const k0 = c.s + sg.m0/1000, k1 = c.s + sg.m1/1000;
+      const line = [at(k0), ...r.track.filter(p => p[3] > k0 && p[3] < k1).map(p => [p[0], p[1]]), at(k1)];
+      const gc = gradeCol(sg.gr);
+      L.polyline(line, {color:gc, weight:8, opacity:1, interactive:true}).bindTooltip(`${fmt(sg.gr)}% · ${fmt((sg.m1-sg.m0)/1000, 1)} km`, {sticky:true}).addTo(climbLayer);
+      const mid = at((k0 + k1) / 2);
+      segLabels.push({a:at(k0), b:at(k1), gc, gr:sg.gr, len:(sg.m1-sg.m0)/1000, m:L.marker(mid, {interactive:false}).addTo(climbLayer)});
+    });
+    L.marker(pts[0], {interactive:false, icon:L.divIcon({className:'', iconSize:null, iconAnchor:[-8, 26], html:`<div class="seglbl start">▲${n} start · ${fmt0(c.bot)} m · színes szakaszok: ${(() => { const L = c.len*1000; return L > 6000 ? '1 km' : L > 2500 ? '500 m' : '200 m'; })()}</div>`})}).addTo(climbLayer);
+    updateSegLabels();
     const top = pts[pts.length-1];
     L.marker(top, {interactive:false, icon:L.divIcon({className:'', html:`<div class="pin" style="width:24px;height:24px;background:${col}">${n}</div>`, iconSize:[24,24], iconAnchor:[12,12]})}).addTo(climbLayer);
-    if (zoom){ const wide = innerWidth > 860; map.flyToBounds(L.latLngBounds(pts), {paddingTopLeft:[40,40], paddingBottomRight:[wide ? Math.min(560, innerWidth*.45) : 40, 40], maxZoom:15, duration:.5}); }
+    L.marker(top, {interactive:false, icon:L.divIcon({className:'', iconSize:null, iconAnchor:[-16, 8], html:`<div class="seglbl start">csúcs ${fmt0(c.top)} m · +${fmt0(c.gain)} m / ${fmt(c.len)} km</div>`})}).addTo(climbLayer);
+    if (zoom){ const wide = innerWidth > 860; map.flyToBounds(L.latLngBounds(pts), {paddingTopLeft:[60,50], paddingBottomRight:[wide ? Math.min(detail.offsetWidth + 60, innerWidth*.6) : 60, 40], maxZoom:16, duration:.5}); }
   }
 }
 function bindClimbs(r){
-  climbLayer.clearLayers(); if (P) P.climb = null;
+  climbLayer.clearLayers(); segLabels = []; if (P) P.climb = null;
   requestAnimationFrame(() => document.querySelectorAll('canvas[data-cv]').forEach(cv => drawClimb(cv, r.climbs.find(c => c.n === +cv.dataset.cv))));
   document.querySelectorAll('[data-cl]').forEach(el => el.onclick = () => {
     const n = +el.dataset.cl;
