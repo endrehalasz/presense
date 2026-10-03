@@ -622,7 +622,7 @@ function renderDetail(r){
   </div>`;
   detail.classList.add('open'); $('.mapwrap').classList.add('dopen'); $('.mapwrap').classList.remove('dhidden');
   $('#dclose').onclick = closeDetail;
-  detail.querySelectorAll('.hls li').forEach(li => li.onclick = () => { const h = r.highlights[+li.dataset.i]; map.flyTo([h.lat,h.lon], 14, {duration:.5}); if (innerWidth<=860){ detail.classList.remove('open'); $('.mapwrap').classList.add('dhidden'); scrollTo({top:0}); } });
+  detail.querySelectorAll('.hls li').forEach(li => li.onclick = () => { const h = r.highlights[+li.dataset.i]; centerOn(h.lat, h.lon, 14); hlLayer.eachLayer(m => { if (m.getLatLng && m.options.title === h.name) setTimeout(() => m.openPopup(), 450); }); });
   safe(bindWxDays); safe(() => bindClimbs(r));
   detail.querySelector('.dbody').scrollTop = 0;
   requestAnimationFrame(() => { setupProfile(r); });
@@ -659,8 +659,8 @@ function setupProfile(r){
   };
 }
 // pont a térkép LÁTHATÓ részének közepére (asztalon az adatlap eltakarja a jobb oldalt; mobilon átvált a térképre)
-function centerOn(lat, lon){
-  const z = Math.max(map.getZoom(), 13);
+function centerOn(lat, lon, minZ = 13){
+  const z = Math.max(map.getZoom(), minZ);
   if (innerWidth <= 860){
     detail.classList.remove('open'); $('.mapwrap').classList.add('dhidden'); scrollTo({top:0});
     map.setView([lat, lon], z, {animate:true}); return;
