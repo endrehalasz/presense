@@ -198,6 +198,8 @@ input[type=range]{width:100%;accent-color:var(--glow)}
 .crow canvas{grid-column:1/-1;width:100%;height:118px}
 .seglbl{font:700 11px/1.15 var(--f-mono);padding:2px 6px;border-radius:6px;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);white-space:nowrap}
 .seglbl small{font-weight:500;font-size:9.5px;opacity:.9}
+.peakpin{display:inline-flex;align-items:center;gap:5px;font:700 12px/1 var(--f-mono);background:var(--card);color:var(--ink);border:2px solid;border-radius:999px;padding:2px 8px 2px 2px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.peakpin b{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;color:#fff;font-size:11px}
 .seglbl.start{background:var(--card);color:var(--ink);border-color:var(--line)}
 .pushtag{font-size:11px;font-weight:700;border-radius:5px;padding:1px 6px;background:color-mix(in srgb,#b0182a 14%,var(--card));color:#b0182a;border:1px dashed #b0182a}
 .pushline{font-size:12.5px;color:#b0182a;margin:4px 0 0}
@@ -341,8 +343,8 @@ input[type=range]{width:100%;accent-color:var(--glow)}
 </div></div>
 
 <script src="lib/leaflet/leaflet.js"></script>
-<script src="data.js?v=20261004-6"></script>
-<script src="basemap.js?v=20261004-6"></script>
+<script src="data.js?v=20261004-7"></script>
+<script src="basemap.js?v=20261004-7"></script>
 <script>
 (function(){
 'use strict';
@@ -879,7 +881,7 @@ function updateSegLabels(){
     const pa = map.latLngToContainerPoint(s.a), pb = map.latLngToContainerPoint(s.b), px = pa.distanceTo(pb);
     const mp = pa.add(pb).divideBy(2), crowded = lastPt && lastPt.distanceTo(mp) < 34;
     const txt = s.gr >= 10 || s.gr <= 0 ? '#fff' : '#1d1406';
-    const html = px < 22 || crowded ? '' : `<div class="seglbl" style="background:${s.gc};color:${txt}">${Math.round(s.gr)}%${px >= 58 ? ` <small>${s.len < 1 ? fmt0(s.len*1000) + ' m' : fmt(s.len, 1) + ' km'}</small>` : ''}</div>`;
+    const html = px < 22 || crowded ? '' : `<div class="seglbl" style="background:${s.gc};color:${txt}">${Math.round(s.gr)}%</div>`;
     if (html) lastPt = mp;
     s.m.setIcon(L.divIcon({className:'', iconSize:null, iconAnchor:[-9, 9], html}));
   });
@@ -911,11 +913,11 @@ function showClimb(r, n, zoom){
       if (seg.length > 1){ L.polyline(seg, {color:'#b0182a', weight:4, dashArray:'4 6', opacity:1, interactive:false}).addTo(climbLayer);
         L.marker(seg[Math.floor(seg.length/2)], {interactive:false, icon:L.divIcon({className:'', iconSize:null, iconAnchor:[24, -6], html:`<div class="pushpin" title="tolós ${fmt0(p.len)} m">🚶 ${fmt0(p.max)}%</div>`})}).addTo(climbLayer); }
     });
-    L.marker(pts[0], {interactive:false, icon:L.divIcon({className:'', iconSize:null, iconAnchor:[-8, 26], html:`<div class="seglbl start">▲${n} start · ${fmt0(c.bot)} m · színes szakaszok: ${(() => { const L = c.len*1000; return L > 6000 ? '1 km' : L > 2500 ? '500 m' : '200 m'; })()}</div>`})}).addTo(climbLayer);
+    /* start-címke nincs: a diagramon látszik */
     updateSegLabels();
     const top = pts[pts.length-1];
-    L.marker(top, {interactive:false, icon:L.divIcon({className:'', html:`<div class="pin" style="width:24px;height:24px;background:${col}">${n}</div>`, iconSize:[24,24], iconAnchor:[12,12]})}).addTo(climbLayer);
-    L.marker(top, {interactive:false, icon:L.divIcon({className:'', iconSize:null, iconAnchor:[-16, 8], html:`<div class="seglbl start">csúcs ${fmt0(c.top)} m · +${fmt0(c.gain)} m / ${fmt(c.len)} km</div>`})}).addTo(climbLayer);
+    L.marker(top, {interactive:false, zIndexOffset:500, icon:L.divIcon({className:'', iconSize:null, iconAnchor:[12, 12], html:`<div class="peakpin" style="border-color:${col}"><b style="background:${col}">${n}</b>▲ ${fmt0(c.top)} m</div>`})}).addTo(climbLayer);
+
     if (zoom){ const wide = innerWidth > 860; map.flyToBounds(L.latLngBounds(pts), {paddingTopLeft:[60,50], paddingBottomRight:[wide ? Math.min(detail.offsetWidth + 60, innerWidth*.6) : 60, 40], maxZoom:16, duration:.5}); }
   }
 }
