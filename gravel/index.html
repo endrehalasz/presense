@@ -81,6 +81,9 @@ input[type=range]{width:100%;accent-color:var(--glow)}
 .badge.d-kozepes{color:#1d1406;background:var(--medium);border-color:var(--medium)}
 .badge.d-nehez{color:#fff;background:var(--hard);border-color:var(--hard)}
 .badge.gen{border-style:dashed}
+.badge.tag-kihivas{background:color-mix(in srgb,#7a2bd9 14%,var(--card));border-color:#7a2bd9;color:#7a2bd9}
+.badge.tag-konnyu-nap{background:color-mix(in srgb,var(--easy) 14%,var(--card));border-color:var(--easy);color:var(--easy)}
+.badge.tag-dombos{background:color-mix(in srgb,var(--medium) 16%,var(--card));border-color:var(--medium);color:var(--ink)}
 .badge.cre{background:var(--glow-soft);border-color:var(--glow);color:var(--glow)}
 .badge svg{width:12px;height:12px}
 .sbar{display:flex;height:6px;border-radius:4px;overflow:hidden;background:var(--line-2)}
@@ -338,13 +341,15 @@ input[type=range]{width:100%;accent-color:var(--glow)}
 </div></div>
 
 <script src="lib/leaflet/leaflet.js"></script>
-<script src="data.js?v=20261004-2"></script>
-<script src="basemap.js?v=20261004-2"></script>
+<script src="data.js?v=20261004-3"></script>
+<script src="basemap.js?v=20261004-3"></script>
 <script>
 (function(){
 'use strict';
 const D = window.GRAVEL, R = D.routes;
-R.forEach(r => { r.climbs = Array.isArray(r.climbs) ? r.climbs : []; r.hardClimbs = r.hardClimbs || r.climbs.filter(c => c.hard).length; r.highlights = r.highlights || []; r.starts = r.starts || []; r.warn = r.warn || []; r.photos = r.photos || []; r.surfBands = r.surfBands || []; r.pushes = r.pushes || []; r.review = r.review || null; });
+R.forEach(r => { r.climbs = Array.isArray(r.climbs) ? r.climbs : []; r.hardClimbs = r.hardClimbs || r.climbs.filter(c => c.hard).length; r.highlights = r.highlights || []; r.starts = r.starts || []; r.warn = r.warn || []; r.photos = r.photos || []; r.surfBands = r.surfBands || []; r.pushes = r.pushes || []; r.review = r.review || null; r.tags = r.tags || []; });
+const TAGS = {kihivas:['⚡ kihívás','Kihívás: meredek hágóút, tolós szakaszokkal – erős lábaknak'], 'konnyu-nap':['☕ könnyű nap','Sík, völgyi útvonal pihenőnapra'], dombos:['⛰ dombos változat','A sík útvonal dombosabb változata']};
+const tagBadges = r => r.tags.filter(t => TAGS[t]).map(t => `<span class="badge tag-${t}" title="${TAGS[t][1]}">${TAGS[t][0]}</span>`).join('');
 const safe = (f, fb = '') => { try { return f(); } catch(e){ console.error(e); return fb; } };
 const $ = s => document.querySelector(s);
 const fmt = (n, d=1) => Number(n).toLocaleString('hu-HU', {minimumFractionDigits:d, maximumFractionDigits:d});
@@ -514,6 +519,7 @@ function apply(){
         <span class="badge d-${r.difficulty}">${DIFF[r.difficulty]}</span>
         <span class="badge">${r.halfday?'Félnapos':'Egész napos'}</span>
         ${r.creative?'<span class="badge cre">✦ kreatív</span>':''}
+        ${tagBadges(r)}
         <span class="badge gen" title="Saját gravel-routerrel, OSM-utakon generálva">generált nyomvonal</span>
         <span class="badge" title="Indulási módok">${startIcons(r)}</span>
         ${r.climbs.length ? `<span class="badge" title="Emelkedők (nehéz: 250+ m szint vagy 8%+ átlag)" style="${r.hardClimbs?'color:var(--hard);border-color:color-mix(in srgb,var(--hard) 45%,var(--line))':''}">⛰ ${r.climbs.length} emelkedő${r.hardClimbs?` · ${r.hardClimbs} nehéz`:''}</span>` : ''}
@@ -585,6 +591,7 @@ function renderDetail(r){
       <span class="badge d-${r.difficulty}">${DIFF[r.difficulty]}</span>
       <span class="badge">${r.halfday?'Félnapos':'Egész napos'}</span>
       ${r.creative?'<span class="badge cre">✦ kreatív</span>':''}
+      ${tagBadges(r)}
       <span class="badge gen">generált nyomvonal</span>
       <span class="badge" style="color:var(--glow)">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)} ${r.rating}/5</span>
       <span class="badge">${r.loop ? 'körtúra' : 'egyirányú'}</span>

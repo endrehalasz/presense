@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="Bad Reichenhall gravel – saját gravel-router (OSM/Overture + SRTM)" xmlns="http://www.topografix.com/GPX/1/1">
-<metadata><name>Thumsee bemelegítő kör</name><desc>GENERÁLT NYOMVONAL – Rövid, szállodából induló kör a legközelebbi tóhoz. Kirchbergen át a Thumsee-hez, a tóparton a Seewirtig, és egy másik úton vissza a városba. Ideális érkezésnapi tesztkörnek. (A Listsee felé vezető út meredek, ezért kimaradt.)</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-04T15:58:28Z</time></metadata>
+<metadata><name>Thumsee bemelegítő kör</name><desc>GENERÁLT NYOMVONAL – Rövid, szállodából induló kör a legközelebbi tóhoz. Kirchbergen át a Thumsee-hez, a tóparton a Seewirtig, és egy másik úton vissza a városba. Ideális érkezésnapi tesztkörnek. (A Listsee felé vezető út meredek, ezért kimaradt.)</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-04T16:52:16Z</time></metadata>
 <wpt lat="47.7232" lon="12.8726"><name>Alte Saline – sólepárló</name><type>history</type></wpt>
 <wpt lat="47.7193" lon="12.8219"><name>Thumsee</name><type>lake</type></wpt>
 <wpt lat="47.7126" lon="12.8145"><name>Nesselgraben (sóvezeték)</name><type>history</type></wpt>
