@@ -21,15 +21,11 @@ def snap(lat,lon):
 EDGE={}
 for i in idx:
     e=E[i]; EDGE[(e['u'],e['v'])]=(i,False); EDGE[(e['v'],e['u'])]=(i,True)
-# „könnyű” profil (visszautakhoz): kerékpárút és kis forgalmú aszfalt előnyben, murva/ösvény, főút és emelkedő büntetve
-EASY_BASE={'cycleway':0.8,'residential':1.0,'living_street':1.1,'unclassified':1.0,'service':1.2,'track':1.25,'tertiary':1.6,'secondary':3.2,'primary':6.0,'pedestrian':2.0,'path':2.2,'footway':3.0,'bridleway':3.0,'unknown':3.0}
-EASY_CAT={'asphalt':1.0,'hard':1.25,'loose':2.0,'trail':3.5}
+# „könnyű” profil (visszautakhoz): ugyanaz a v2 költség, de a nem aszfaltos utak 1,4× drágábbak
 def easy_cost(e):
-    f=EASY_BASE.get(e['cls'],3.0)*EASY_CAT[e['cat']]
-    if e['acc']=='designated': f*=0.75
-    if e.get('sub')=='driveway': f*=2.0
-    if e['acc'] in('private','restricted'): f*=3.0
-    return e['L']*f+9.0*e.get('climb',0)
+    base=e['cost']-4.0*e.get('climb',0)
+    f=1.0 if e['cat']=='asphalt' else 1.4
+    return base*f+6.0*e.get('climb',0)
 _A={'gravel':A}
 def matrix(profile):
     if profile not in _A:
@@ -41,21 +37,32 @@ def path(a,b,avoid=None,profile='gravel'):
     if avoid:
         M=M.copy().tolil()
         for (p,q) in avoid: 
-            M[p,q]=M[p,q]*4; M[q,p]=M[q,p]*4
+            M[p,q]=M[p,q]*1.6; M[q,p]=M[q,p]*1.6
         M=M.tocsr()
     dist,pred=dijkstra(M,directed=True,indices=a,return_predecessors=True,limit=np.inf)
     if not np.isfinite(dist[b]): raise RuntimeError('no path')
     seq=[b]
     while seq[-1]!=a: seq.append(pred[seq[-1]])
     return seq[::-1]
-def route(wps, penalize_reuse=True, profile='gravel', used=None):
-    """wps: list of (lat,lon). returns list of edge-steps [(edge_index,reversed)] and snap info"""
+def route(wps, penalize_reuse=True, profile='gravel', used=None, must=(), spur_max=1500.0):
+    """wps: (lat,lon) lista. Visszaad: [(él index, fordított)] lépések + snap távolságok.
+    A köztes útpontoknál a zsákutca-kitérőt (be és ugyanott vissza, < spur_max m) levágja,
+    kivéve a `must` indexű útpontokat."""
     sn=[snap(*p) for p in wps]
-    steps=[]; used=set() if used is None else used
+    legs=[]; used=set() if used is None else used
     for (a,da),(b,db) in zip(sn[:-1],sn[1:]):
         seq=path(a,b,avoid=used if (penalize_reuse and used) else None,profile=profile)
-        for p,q in zip(seq[:-1],seq[1:]):
-            steps.append(EDGE[(p,q)]); used.add((p,q))
+        leg=[EDGE[(p,q)] for p,q in zip(seq[:-1],seq[1:])]
+        for p,q in zip(seq[:-1],seq[1:]): used.add((p,q))
+        legs.append(leg)
+    for k in range(len(legs)-1):
+        if k+1 in must: continue
+        inn, out = legs[k], legs[k+1]; n=0; L=0.0
+        while n < min(len(inn), len(out)) and inn[-1-n][0]==out[n][0] and inn[-1-n][1]!=out[n][1]:
+            L += E[out[n][0]]['L']; n+=1
+        if n and L < spur_max:
+            legs[k]=inn[:-n]; legs[k+1]=out[n:]
+    steps=[s_ for leg in legs for s_ in leg]
     return steps,[d for _,d in sn]
 def geometry(steps):
     pts=[];cats=[];names=[];clss=[]
@@ -64,3 +71,10 @@ def geometry(steps):
         if pts: p=p[1:]
         pts.extend(p.tolist()); cats.extend([e['cat']]*len(p)); clss.extend([e['cls']]*len(p)); names.extend([e['name']]*len(p))
     return np.array(pts),cats,clss,names
+
+def edge_ids(steps):
+    """pontonként az él indexe (a geometry() pontsorrendjével egyezően)"""
+    out=[]
+    for i,r in steps:
+        m=len(E[i]['pts']); out.extend([i]*(m if not out else m-1))
+    return out

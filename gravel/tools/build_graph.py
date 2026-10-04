@@ -92,20 +92,50 @@ allp=np.vstack([e['pts'] for e in E]); allz=elev(allp[:,0],allp[:,1]); k=0
 for e in E:
     m=len(e['pts']); zz=allz[k:k+m]; k+=m
     dz=np.diff(zz); e['climb']=float((np.abs(dz).sum())/2)
+# --- max meredekség 250 m-es csúszóablakban, a mai (2026-10-04) barometrikus túrán kalibrálva
+k=0
 for e in E:
-    f=BASE.get(e['cls'],2.5)
+    m=len(e['pts']); p=e['pts']; zz=allz[k:k+m]; k+=m
+    dd=np.r_[0,np.cumsum(np.hypot(np.diff(p[:,0])*KY,np.diff(p[:,1])*KX))]
+    if dd[-1]<250: e['mg']=float(abs(zz[-1]-zz[0])/250*100); continue
+    s_=np.arange(0,dd[-1]+1e-6,25.0); zi=np.interp(s_,dd,zz); w=10
+    if len(zi)>=8: zi=np.convolve(np.pad(zi,(4,4),mode='edge'),np.ones(8)/8,mode='same')[4:-4]   # 200 m simítás
+    e['mg']=float(np.max(np.abs(zi[w:]-zi[:-w]))/250*100) if len(zi)>w else float(abs(zz[-1]-zz[0])/dd[-1]*100)
+
+# --- v2 költség (felhasználói szabályok, 2026-10-04):
+#  bringaút (cycleway vagy kerékpárnak kijelölt) a legjobb; kis forgalmú aszfalt majdnem olyan jó;
+#  jó murva (gravel) jó; ismeretlen burkolatú / földes erdei út és ösvény kerülendő;
+#  főút csak ha muszáj; tolós meredekség: aszfalton >12%, murván >10%.
+def is_bikeway(e):
+    return e['cls']=='cycleway' or e['acc']=='designated'
+def factor(e):
+    cls, cat, surf = e['cls'], e['cat'], e['surf']
+    paved = cat=='asphalt'
+    if is_bikeway(e):
+        f = 0.60 if paved else 0.72 if surf in ('gravel','unpaved') else 0.95 if surf in (None,'unknown') else 1.6   # kijelölt bringaút: murvásan is jó (gátak, Radweg)
+    elif cls in ('residential','unclassified','living_street'):
+        f = 0.95 if paved else 1.0 if surf=='gravel' else 1.8
+    elif cls=='service':
+        f = 1.05 if paved else 1.1 if surf=='gravel' else 2.0
+    elif cls=='track':
+        f = 0.95 if paved else 1.0 if surf=='gravel' else 1.8 if surf=='unpaved' else 4.0 if surf=='dirt' else 2.6
+    elif cls=='tertiary': f = 1.25
+    elif cls=='secondary': f = 2.0
+    elif cls=='primary': f = 2.8
+    elif cls in ('path','footway','bridleway'):
+        f = 1.8 if paved else 3.0 if surf=='gravel' else 25.0      # erdei ösvény: gyakorlatilag tiltott
+    elif cls=='pedestrian': f = 2.5
+    else: f = 3.0
     if e['sub']=='driveway': f*=2.0
     if e['sub']=='parking_aisle': f*=2.0
-    if e['sub']=='sidewalk': f*=1.6
-    if e['acc']=='designated': f*=0.85
-    if e['acc']=='private': f*=2.5
+    if e['acc']=='private': f*=3.0
     if e['acc']=='restricted': f*=3.0
-    if e['cls'] in('track','unclassified','service','path') and e['cat'] in('hard',): f*=0.85
-    if e['cls']=='track' and e['cat']=='loose': f*=1.05
-    if e['cls'] in('path','footway') and e['cat']=='trail': f*=1.3
-    g=abs(z[e['u']]-z[e['v']])/max(e['L'],30)
-    if g>0.12: f*=1.4
-    if g>0.18: f*=2.5
-    e['cost']=e['L']*f+5.0*e['climb']
+    lim = 12.0 if paved else 10.0
+    if e['mg']>lim: f*=6.0                       # tolós
+    elif e['mg']>lim-2: f*=1.4
+    return f
+for e in E:
+    e['bikeway']=is_bikeway(e)
+    e['cost']=e['L']*factor(e)+4.0*e['climb']
 pickle.dump(dict(nodes=ncoord,z=z,E=E),open('graph.pkl','wb'))
 print(len(ncoord),len(E))

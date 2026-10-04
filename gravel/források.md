@@ -25,6 +25,16 @@ A munkakörnyezet hálózati szabályzata (egress proxy) csak néhány hostot en
 
 Elérhető volt viszont az **AWS S3** – így a nyílt adatokat innen szereztem be:
 
+## Tervezési szabályok (2026-10-04-i visszajelzés alapján)
+
+- **Kijelölt bringaút** (cycleway vagy kerékpárnak kijelölt út, aszfalt vagy döngölt murva) a legjobb: 0,60–0,72× költség; kis kerülővel is ezt választja.
+- **Kis forgalmú szilárd út** (lakó-, mellék-, mezőgazdasági aszfaltút): 0,95×. **Jó murva** (kifejezetten „gravel” jelölésű): 1,0×.
+- **Főút** csak ha muszáj (harmadrendű 1,25×, másodrendű 2,0×, elsőrendű 2,8×); kerékpárral tiltott utat soha.
+- **Bizonytalan erdei út** (burkolat nélküli/ismeretlen track) 2,6×, földút 4×; **erdei ösvény** 25× – gyakorlatilag kizárva.
+- **Tolós meredekség:** aszfalton 12%, murván 10% felett 6× büntetés. Meredekség 200 m-es simítással, 250 m-es ablakban – a 2026-10-04-i barometrikus túrán kalibrálva (a DEM 99%-os percentilise 8,6% a barométer 8,1%-ához képest).
+- **Kitérők ellen:** zsákutca-kitérők (be és vissza ugyanott, < 1,5 km) levágva; település-útpont kihagyva, ha csak 0,3–3 km-es központ-kitérőt okozna; tó/kilátó/szurdok csak kiemelt pont, kivéve ha az útvonal lényege („via”).
+- **Tolós szakaszok** a magassági profilon, a ClimbPro-kártyákon és a térképen jelölve (🚶).
+
 ## Felhasznált adatok
 
 | Adat | Forrás | Licenc |

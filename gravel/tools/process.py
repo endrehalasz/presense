@@ -144,7 +144,29 @@ def esc(s):
 
 routes_out = []
 for R in ROUTES:
-    wps = [w[:2] for w in R['wps']]
+    # útpont-szabály: tó/kilátó/szurdok/történelmi pont alapból csak kiemelt pont ('hl'), kivéve ha 'via'-val jelölt;
+    # település, állomás, kunyhó, hágó és a névtelen pontok útpontok
+    def is_via(w):
+        if len(w) >= 5: return w[4] == 'via'
+        return len(w) < 4 or w[3] not in ('lake', 'view', 'gorge', 'history')
+    vw = [w for w in R['wps'] if is_via(w)]
+    if vw[0] is not R['wps'][0]: vw.insert(0, R['wps'][0])
+    if vw[-1] is not R['wps'][-1]: vw.append(R['wps'][-1])
+    # felesleges településközpont-kitérő kiszűrése: ha a 'town' útpont kihagyásával a nyomvonal
+    # 0,3–3 km-rel rövidebb (be a központba, majd vissza ugyanoda), kihagyjuk (kiemelt pont marad)
+    k_ = 1; skipped = []
+    while k_ < len(vw) - 1:
+        w = vw[k_]
+        if len(w) >= 4 and w[3] == 'town' and not (len(w) >= 5 and w[4] == 'via'):
+            a_, b_ = router.snap(*vw[k_-1][:2])[0], router.snap(*vw[k_+1][:2])[0]; m_ = router.snap(*w[:2])[0]
+            Lp = lambda sq: sum(router.E[router.EDGE[(p_, q_)][0]]['L'] for p_, q_ in zip(sq[:-1], sq[1:]))
+            if a_ != b_:
+                via_len = Lp(router.path(a_, m_)) + Lp(router.path(m_, b_)); dir_len = Lp(router.path(a_, b_))
+                if 300 < via_len - dir_len < 3000:
+                    skipped.append((w[2], round((via_len - dir_len) / 1000, 1))); vw.pop(k_); continue
+        k_ += 1
+    if skipped: print('   kihagyott központ-kitérők:', skipped)
+    wps = [w[:2] for w in vw]
     steps, snapd = router.route(wps)
     if R.get('wps_back'):
         # visszaút könnyű profillal; az odaúton használt éleket kerüli
@@ -155,12 +177,73 @@ for R in ROUTES:
         back, snapb = router.route([wps[-1]] + [w[:2] for w in R['wps_back']], profile='easy', used=used)
         steps += back; snapd += snapb
     pts, cats, clss, names = router.geometry(steps)
+    eids0 = router.edge_ids(steps)
+    pts_raw = pts
     pts, cats = densify(pts, cats)
+    # élindex a sűrített pontokhoz (legközelebbi eredeti pont alapján, sorrendben)
+    from scipy.spatial import cKDTree as _KD
+    _t = _KD(np.c_[pts_raw[:, 0] * KY, pts_raw[:, 1] * KX]); _, _j = _t.query(np.c_[pts[:, 0] * KY, pts[:, 1] * KX])
+    eids = [eids0[min(j, len(eids0) - 1)] for j in _j]
     seglen = np.r_[0, np.hypot(np.diff(pts[:, 0]) * KY, np.diff(pts[:, 1]) * KX)]
     d = np.cumsum(seglen)
     zr = elev(pts[:, 0], pts[:, 1])
     z = smooth(zr, d, 200.0)
     up, dn = ascent(z, 4.0)
+    # --- tolós szakaszok: menetirányban felfelé; 200 m simítás + 250 m ablak (barométeren kalibrálva);
+    #     aszfalton >12%, murván/földúton >10%
+    z100 = smooth(zr, d, 200.0)
+    gwin = np.zeros(len(d)); j = 0
+    for a_ in range(len(d)):
+        while j < len(d) - 1 and d[j] - d[a_] < 250: j += 1
+        gwin[a_] = (z100[j] - z100[a_]) / max(1.0, d[j] - d[a_]) * 100
+    lim = np.array([12.0 if c == 'asphalt' else 10.0 for c in cats])
+    pushm = gwin > lim
+    pushes = []; a_ = None
+    for k_ in range(len(d)):
+        if pushm[k_] and a_ is None: a_ = k_
+        if (not pushm[k_] or k_ == len(d) - 1) and a_ is not None:
+            e_ = k_
+            j = e_
+            while j < len(d) - 1 and d[j] - d[e_] < 250: j += 1   # az ablak végéig tart
+            if pushes and d[a_] - pushes[-1][1] < 100: pushes[-1][1] = d[j]; pushes[-1][3] = max(pushes[-1][3], gwin[a_:e_+1].max())
+            else: pushes.append([d[a_], d[j], cats[a_], float(gwin[a_:e_+1].max())])
+            a_ = None
+    pushes = [dict(s=round(p_[0]/1000, 2), e=round(p_[1]/1000, 2), len=int(p_[1]-p_[0]), surf=('aszfalt' if p_[2]=='asphalt' else 'murva/földút'), max=round(p_[3], 1)) for p_ in pushes if p_[1]-p_[0] >= 80]
+    # --- ellenőrző metrikák
+    EE = router.E
+    def km_where(fn): return sum(L for L, ei in zip(np.r_[np.diff(d), 0], eids) if fn(EE[ei])) / 1000
+    bike_km = km_where(lambda e: e.get('bikeway'))
+    main_km = km_where(lambda e: e['cls'] in ('primary', 'secondary'))
+    tert_km = km_where(lambda e: e['cls'] == 'tertiary')
+    bad_track_km = km_where(lambda e: e['cls'] == 'track' and e['cat'] != 'asphalt' and e['surf'] != 'gravel')
+    trail_runs = []; cur = 0.0
+    for L, ei in zip(np.r_[np.diff(d), 0], eids):
+        e = EE[ei]
+        if e['cls'] in ('path', 'footway', 'bridleway') and not e.get('bikeway') and e['cat'] in ('trail', 'loose'): cur += L
+        else:
+            if cur: trail_runs.append(cur); cur = 0.0
+    if cur: trail_runs.append(cur)
+    flat_pct = float(np.mean(np.abs(gwin) < 2.0) * 100)
+    steep_m = float(np.sum(np.r_[np.diff(d), 0][np.abs(gwin) > 10]))
+    # hurok/visszatérés: a nyomvonal 40 m-en belül visszaér egy 0,4–4 km-rel korábbi pontra
+    loops = []
+    _kd = _KD(np.c_[pts[:, 0] * KY, pts[:, 1] * KX])
+    for a_ in range(0, len(d), 5):
+        for b_ in _kd.query_ball_point([pts[a_, 0] * KY, pts[a_, 1] * KX], 40):
+            if 400 < d[b_] - d[a_] < 4000:
+                seg_e = set(eids[a_:b_])
+                # csak ha a közbenső rész jórészt más éleken fut, mint az oda-vissza (valódi kitérő/hurok)
+                back = sum(1 for x in seg_e if eids.count(x) > 1) / max(1, len(seg_e))
+                if back < 0.6: loops.append((round(d[a_]/1000, 1), round(d[b_]/1000, 1)))
+                break
+    # összevonás
+    lp = []
+    for x in loops:
+        if lp and x[0] - lp[-1][1] < 0.3 or (lp and x[0] <= lp[-1][1]): lp[-1] = (lp[-1][0], max(lp[-1][1], x[1]))
+        else: lp.append(x)
+    review = dict(bikeKm=round(bike_km, 1), mainKm=round(main_km, 1), tertKm=round(tert_km, 1), badTrackKm=round(bad_track_km, 1),
+                  trailMax=int(max(trail_runs) if trail_runs else 0), trailKm=round(sum(trail_runs)/1000, 2), flatPct=round(flat_pct),
+                  steepM=int(steep_m), pushM=int(sum(p_['len'] for p_ in pushes)), loops=lp[:12])
     climbs_list = find_climbs(d, z)
     lc = max(climbs_list, key=lambda c: c['gain']) if climbs_list else None
     longest = dict(start=lc['s'] * 1000, len=lc['len'] * 1000, gain=lc['gain'], grade=lc['avg']) if lc else None
@@ -234,7 +317,7 @@ for R in ROUTES:
              timeH=round(t_h, 2), difficulty=diff, score=round(score, 1), halfday=bool(halfday), loop=bool(loop),
              gravel=gravel_pct, surface=surfpct, surfBands=sb,
              longestClimb=dict(km=round(longest['start'] / 1000, 1), len=round(longest['len'] / 1000, 1), gain=int(longest['gain']), grade=round(longest['grade'], 1)) if longest else None,
-             climbs=climbs_list, hardClimbs=sum(c['hard'] for c in climbs_list),
+             climbs=climbs_list, hardClimbs=sum(c['hard'] for c in climbs_list), pushes=pushes, review=review,
              steepest=dict(grade=round(st_g, 1), km=round(st_at / 1000, 1)),
              hotelKm=round(hotel_d, 1), fromHotel=bool(hotel_d <= 3),
              starts=starts, highlights=hl, warn=R['warn'], photos=R['photos'],
@@ -242,7 +325,8 @@ for R in ROUTES:
              snapMax=int(max(snapd)), track=track,
              gmaps=f"https://www.google.com/maps/dir/?api=1&origin={pts[0,0]:.5f},{pts[0,1]:.5f}&destination={pts[-1,0]:.5f},{pts[-1,1]:.5f}&travelmode=bicycling&waypoints=" + "%7C".join(f"{w[0]:.5f},{w[1]:.5f}" for w in (lambda l: l[::max(1, -(-len(l) // 9))])((R['wps'] + R.get('wps_back', []))[1:-1])))
     routes_out.append(r)
-    print(f"{R['id']:24s} {km:6.1f} km {up:5.0f} m  max {z.max():5.0f}  gravel {gravel_pct:5.1f}%  {diff:8s} half={halfday} t={t_h:.1f}h rep={rep:.0f}% snap={max(snapd):.0f} pts={len(track)}")
+    rv = review
+    print(f"{R['id']:24s} {km:6.1f}km {up:5.0f}m max{z.max():5.0f} | bringaút {rv['bikeKm']:5.1f} főút {rv['mainKm']:4.1f} rossz-erdei {rv['badTrackKm']:4.1f} ösvény max {rv['trailMax']:4d}m | tolós {rv['pushM']:4d}m ({len(pushes)}) sík {rv['flatPct']:2d}% | hurok {rv['loops']}")
 
     # GPX
     gx = ['<?xml version="1.0" encoding="UTF-8"?>',
