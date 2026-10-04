@@ -85,6 +85,9 @@ input[type=range]{width:100%;accent-color:var(--glow)}
 .badge svg{width:12px;height:12px}
 .sbar{display:flex;height:6px;border-radius:4px;overflow:hidden;background:var(--line-2)}
 .sbar i{display:block;height:100%}
+.card.variant{margin-left:18px}
+.vlabel{font-size:11.5px;font-weight:600;color:var(--glow);margin:0 64px 2px 0}
+.variants{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .empty{padding:30px 10px;text-align:center;color:var(--ink-3)}
 /* ---------- térkép ---------- */
 .mapwrap{position:relative;min-height:0}
@@ -332,8 +335,8 @@ input[type=range]{width:100%;accent-color:var(--glow)}
 </div></div>
 
 <script src="lib/leaflet/leaflet.js"></script>
-<script src="data.js?v=20261003-5"></script>
-<script src="basemap.js?v=20261003-5"></script>
+<script src="data.js?v=20261004-1"></script>
+<script src="basemap.js?v=20261004-1"></script>
 <script>
 (function(){
 'use strict';
@@ -492,15 +495,18 @@ const sorters = {rating:(a,b)=>b.rating-a.rating||a.km-b.km, km:(a,b)=>a.km-b.km
 function sbarHTML(s){ return `<div class="sbar">${SURF.map(([k,,v]) => s[k] > 0 ? `<i style="width:${s[k]}%;background:var(${v})" title="${k}"></i>` : '').join('')}</div>`; }
 function startIcons(r){ return r.starts.map(s => ({hotel:'🏨', car:'🚗', train:'🚆'})[s.mode]).join(' '); }
 function apply(){
-  const rs = R.filter(pass).sort(sorters[F.sort]);
+  const rs0 = R.filter(pass).sort(sorters[F.sort]);
+  // változatok közvetlenül az alapútvonal alá
+  const rs = rs0.filter(r => !r.variantOf || !rs0.some(x => x.id === r.variantOf));
+  rs0.filter(r => r.variantOf && rs.some(x => x.id === r.variantOf)).forEach(v => rs.splice(rs.findIndex(x => x.id === v.variantOf) + 1, 0, v));
   visible = new Set(rs.map(r => r.id));
   $('#count').textContent = `${rs.length} / ${R.length} útvonal`;
   $('#fcount').textContent = `${rs.length} / ${R.length}`;
   $('#list').innerHTML = rs.length ? rs.map(r => `
-    <article class="card${sel&&sel.id===r.id?' active':''}" data-id="${r.id}" tabindex="0">
+    <article class="card${sel&&sel.id===r.id?' active':''}${r.variantOf && rs.some(x => x.id === r.variantOf) ? ' variant' : ''}" data-id="${r.id}" tabindex="0">
       <span class="stripe" style="background:var(${DIFFVAR[r.difficulty]})"></span>
       <span class="stars" title="Értékelés: ${r.rating}/5">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
-      <h3>${esc(r.name)}</h3>
+      ${r.variantOf ? `<div class="vlabel">↳ változat: ${esc((R.find(x => x.id === r.variantOf) || {}).name || '')}</div>` : ''}<h3>${esc(r.name)}</h3>
       <div class="badges">
         <span class="badge d-${r.difficulty}">${DIFF[r.difficulty]}</span>
         <span class="badge">${r.halfday?'Félnapos':'Egész napos'}</span>
@@ -575,6 +581,7 @@ function renderDetail(r){
   </div>
   <div class="dbody">
     <p class="desc">${esc(r.desc)}</p>
+    ${(() => { const vs = R.filter(x => x.id !== r.id && (x.variantOf === r.id || r.variantOf === x.id || (r.variantOf && x.variantOf === r.variantOf))); return vs.length ? `<div class="variants">${vs.map(v => `<button class="btn" data-variant="${v.id}">↔ ${v.variantOf === r.id ? 'Változat' : 'Alapútvonal'}: ${esc(v.name)} (${fmt(v.km)} km, ${fmt0(v.up)} m)</button>`).join('')}</div>` : ''; })()}
     <div class="stats">
       <div class="stat"><small>Táv</small><b>${fmt(r.km)}<span>km</span></b></div>
       <div class="stat"><small>Szint fel / le</small><b>${fmt0(r.up)}<span>m</span></b><em>le: ${fmt0(r.down)} m</em></div>
@@ -624,6 +631,7 @@ function renderDetail(r){
   $('#dclose').onclick = closeDetail;
   detail.querySelectorAll('.hls li').forEach(li => li.onclick = () => { const h = r.highlights[+li.dataset.i]; centerOn(h.lat, h.lon, 14); hlLayer.eachLayer(m => { if (m.getLatLng && m.options.title === h.name) setTimeout(() => m.openPopup(), 450); }); });
   safe(bindWxDays); safe(() => bindClimbs(r));
+  detail.querySelectorAll('[data-variant]').forEach(b => b.onclick = () => select(b.dataset.variant, true));
   detail.querySelector('.dbody').scrollTop = 0;
   requestAnimationFrame(() => { setupProfile(r); });
   loadPhotos(r);

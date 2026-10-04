@@ -238,7 +238,7 @@ for R in ROUTES:
              steepest=dict(grade=round(st_g, 1), km=round(st_at / 1000, 1)),
              hotelKm=round(hotel_d, 1), fromHotel=bool(hotel_d <= 3),
              starts=starts, highlights=hl, warn=R['warn'], photos=R['photos'],
-             inspired=R.get('inspired'), generated=True, repeatPct=round(rep, 1),
+             inspired=R.get('inspired'), variantOf=R.get('variant_of'), generated=True, repeatPct=round(rep, 1),
              snapMax=int(max(snapd)), track=track,
              gmaps=f"https://www.google.com/maps/dir/?api=1&origin={pts[0,0]:.5f},{pts[0,1]:.5f}&destination={pts[-1,0]:.5f},{pts[-1,1]:.5f}&travelmode=bicycling&waypoints=" + "%7C".join(f"{w[0]:.5f},{w[1]:.5f}" for w in (lambda l: l[::max(1, -(-len(l) // 9))])((R['wps'] + R.get('wps_back', []))[1:-1])))
     routes_out.append(r)
