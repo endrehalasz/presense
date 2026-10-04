@@ -4,7 +4,7 @@ Generálva: 2026-10-03. Minden adatot a `tools/` mappa szkriptjei töltöttek le
 
 ## Összefoglaló
 
-- **28 útvonal** (ebből 4 dombos változat), **0 valódi forrás-GPX** és **28 generált nyomvonal**. Jelölések: ⚡ kihívás (meredek hágóút, tolós szakaszokkal), ☕ könnyű nap (sík völgyi út), ⛰ dombos változat.
+- **29 útvonal** (ebből 4 dombos változat és a Rossfeld-kör), **0 valódi forrás-GPX** és **29 generált nyomvonal**. Jelölések: ⚡ kihívás (meredek hágóút, tolós szakaszokkal), ☕ könnyű nap (sík völgyi út), ⛰ dombos változat.
 - Mindegyik nyomvonal valódi, utakat követő track: egy saját gravel-útvonaltervező (`tools/router.py`) számolta az OpenStreetMap úthálózatán (Overture Maps), a leírásban szereplő fő útpontokon át. Egyenesekkel összekötött pont nincs.
 - Mindegyik útvonal és GPX-fájl **„generált nyomvonal”** címkét kapott (a weboldalon, a GPX `<desc>` mezőjében és a KML-ben is).
 

@@ -220,6 +220,16 @@ dict(id="rossfeld", tags=["kihivas"], name="Rossfeld-panorámaút – vonattal o
  car=None, train=("bgd","BR → Berchtesgaden Hbf, ~30 perc, majd bringával haza."),
  warn=["A Rossfeld 1500 m felett: október elején hó és jegesedés valószínű – webkamera, és ha havas, fordulj Oberauból Marktschellenberg felé.",
        "A panorámaút autós fizetős út, hétvégén motoros forgalom.", BIKE_TICKET_DE]),
+# ------------------------------------------------------------------ 18b
+dict(id="rossfeld-kor", variant_of="rossfeld", tags=["kihivas"], name="Rossfeld-kör a szállodától (gerinc + Bischofswiesen-völgy)", creative=True, rating=5,
+ inspired=None,
+ desc="Nagy körtúra a szállodától: Großgmainon és St. Leonhardon át a Berchtesgadeni-völgybe, Marktschellenbergtől Oberauig, majd fel a Rossfeld-panorámaútra és végig a gerincen (≈1550 m) a Hoher Göll és a Tennengebirge között, a Dachsteinre néző kilátókkal. A Roßfeldstraße teljes gerincszakaszán végig (Skihütte → Almkiosk → a legmagasabb pont, ≈1540 m), majd a Purtschellerstraßén aszfalton le Hinterecken (Obersalzberg) át Berchtesgadenbe, onnan a Bischofswiesen-völgyön és a Hallthurm-hágón át gurulsz haza.",
+ wps=[HOTEL,(47.7296,12.9180,"Großgmain","town"),(47.7262,13.0444,"St. Leonhard – Untersbergbahn","view","via"),(47.6970,13.0450,"Marktschellenberg","town","via"),(47.6450,13.0450,"Oberau","town","via"),(47.6514,13.0618,"Rossfeld – Skihütte","view","via"),(47.6548,13.0806),(47.6419,13.0878),(47.6349,13.0904),(47.6312,13.0929,"Rossfeld Almkiosk – panoráma","view","via"),(47.6237,13.0894),(47.6185,13.0847,"Roßfeldstraße – legmagasabb pont (≈1540 m)","view","via"),(47.6220,13.0716),(47.6265,13.0480,"Hintereck / Obersalzberg","town","via"),(47.6263,12.9993,"Berchtesgaden","town","via"),(47.6520,12.9604,"Bischofswiesen","town","via"),(47.6966,12.9354,"Hallthurm-hágó","pass"),HOTEL],
+ photos=["Roßfeldpanoramastraße","Rossfeld Berchtesgaden","Hoher Göll","Marktschellenberg"],
+ car=None, train=("bgd","Rövidítés: vonattal Berchtesgadenig (~30 perc), és onnan a gerincre."),
+ warn=["A Rossfeld 1500 m felett: október elején hó és jegesedés lehet – nézd meg a webkamerát, és ha havas, fordulj Oberauból.",
+       "A panorámaút autós fizetős út, hétvégén motoros forgalom.",
+       "Hosszú, kemény nap: legkésőbb 8:30-kor indulj, lámpa legyen nálad."]),
 # ------------------------------------------------------------------ 19
 dict(id="loferer-alm", name="Lofer – Vorderkaserklamm – Unken (Saalach-völgy)", creative=False, rating=4,
  inspired=dict(guide="Gravelbiken around Thumsee"),
