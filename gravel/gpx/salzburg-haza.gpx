@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="Bad Reichenhall gravel – saját gravel-router (OSM/Overture + SRTM)" xmlns="http://www.topografix.com/GPX/1/1">
-<metadata><name>Vonattal Salzburgba, bringával haza (WOSSA 1 ihlette)</name><desc>GENERÁLT NYOMVONAL – Reggel S-Bahnnal Salzburgba, kávé a Salzach-parton, aztán a Salzach gátján Hellbrunnig, a Glasenbach-szurdok bejáratáig, majd a Leopoldskroner Moos lápréti útjain, Grödigen és Fürstenbrunnon át az Untersberg lábánál haza. Ajándék nap: egyirányú, majdnem végig lejt vagy sík.</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-04T18:10:46Z</time></metadata>
+<metadata><name>Vonattal Salzburgba, bringával haza (WOSSA 1 ihlette)</name><desc>GENERÁLT NYOMVONAL – Reggel S-Bahnnal Salzburgba, kávé a Salzach-parton, aztán a Salzach gátján Hellbrunnig, a Glasenbach-szurdok bejáratáig, majd a Leopoldskroner Moos lápréti útjain, Grödigen és Fürstenbrunnon át az Untersberg lábánál haza. Ajándék nap: egyirányú, majdnem végig lejt vagy sík.</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-04T22:31:44Z</time></metadata>
 <wpt lat="47.8125" lon="13.0453"><name>Salzburg Hbf</name><type>station</type></wpt>
 <wpt lat="47.8" lon="13.045"><name>Salzburg óváros – Salzach</name><type>history</type></wpt>
 <wpt lat="47.77" lon="13.0759"><name>Salzach-gát</name><type>view</type></wpt>
