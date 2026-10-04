@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="Bad Reichenhall gravel – saját gravel-router (OSM/Overture + SRTM)" xmlns="http://www.topografix.com/GPX/1/1">
-<metadata><name>Lofer – Vorderkaserklamm – Unken (Saalach-völgy)</name><desc>GENERÁLT NYOMVONAL – Loferből St. Martinon át a Vorderkaserklamm szurdokához (büfé, rövid gyalogos kör a szurdokban), majd vissza Loferbe és a Saalach-völgyi bringaúton (Tauernradweg) Unkenig és vissza. Lankás, a Loferer Steinberge falai alatt. A Loferer Alm meredek hegyi útja kimaradt.</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-04T23:36:51Z</time></metadata>
+<metadata><name>Lofer – Vorderkaserklamm – Unken (Saalach-völgy)</name><desc>GENERÁLT NYOMVONAL – Loferből St. Martinon át a Vorderkaserklamm szurdokához (büfé, rövid gyalogos kör a szurdokban), majd vissza Loferbe és a Saalach-völgyi bringaúton (Tauernradweg) Unkenig és vissza. Lankás, a Loferer Steinberge falai alatt. A Loferer Alm meredek hegyi útja kimaradt.</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-04T23:50:36Z</time></metadata>
 <wpt lat="47.5868" lon="12.695"><name>Lofer</name><type>town</type></wpt>
 <wpt lat="47.5678" lon="12.7049"><name>St. Martin bei Lofer</name><type>town</type></wpt>
 <wpt lat="47.5214" lon="12.704"><name>Vorderkaserklamm</name><type>gorge</type></wpt>
