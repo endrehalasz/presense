@@ -190,12 +190,12 @@ input[type=range]{width:100%;accent-color:var(--glow)}
 .ctag{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border-radius:5px;padding:1px 6px;background:color-mix(in srgb,var(--hard) 15%,var(--card));color:var(--hard);border:1px solid color-mix(in srgb,var(--hard) 40%,var(--line))}
 .cfacts{display:grid;grid-template-columns:repeat(5,auto);gap:2px 12px;margin:7px 0 2px;font:500 12px var(--f-mono);color:var(--ink-2)}
 .cfacts span b{display:block;font:500 15px var(--f-mono);color:var(--ink)}
-.climb canvas{display:block;width:100%;height:120px;margin-top:6px}
+.climb canvas{display:block;width:100%;height:138px;margin-top:6px}
 .crow{display:grid;grid-template-columns:26px 1fr auto;gap:9px;align-items:center;padding:7px 4px;border-bottom:1px dashed var(--line);cursor:pointer;font-size:13px}
 .crow:hover,.crow.on{background:var(--paper-2)}
 .crow .cnum{width:22px;height:22px;font-size:11px}
 .crow .m{font:500 12px var(--f-mono);color:var(--ink-2);text-align:right}
-.crow canvas{grid-column:1/-1;width:100%;height:100px}
+.crow canvas{grid-column:1/-1;width:100%;height:118px}
 .seglbl{font:700 11px/1.15 var(--f-mono);padding:2px 6px;border-radius:6px;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);white-space:nowrap}
 .seglbl small{font-weight:500;font-size:9.5px;opacity:.9}
 .seglbl.start{background:var(--card);color:var(--ink);border-color:var(--line)}
@@ -341,8 +341,8 @@ input[type=range]{width:100%;accent-color:var(--glow)}
 </div></div>
 
 <script src="lib/leaflet/leaflet.js"></script>
-<script src="data.js?v=20261004-5"></script>
-<script src="basemap.js?v=20261004-5"></script>
+<script src="data.js?v=20261004-6"></script>
+<script src="basemap.js?v=20261004-6"></script>
 <script>
 (function(){
 'use strict';
@@ -554,7 +554,7 @@ function select(id, zoom){
     if (seg.length < 2) return;
     L.polyline(seg, {color:'#fff', weight:10, opacity:.9, interactive:false}).addTo(hlLayer);
     L.polyline(seg, {color:'#b0182a', weight:6, dashArray:'6 6', opacity:1}).bindTooltip(`🚶 tolós: ${fmt0(p.len)} m, max ${fmt0(p.max)}% (${p.surf})`, {sticky:true}).addTo(hlLayer);
-    L.marker(seg[0], {interactive:false, icon:L.divIcon({className:'', iconSize:null, iconAnchor:[-6, 24], html:`<div class="pushpin">🚶 ${fmt0(p.len)} m</div>`})}).addTo(pushPinLayer);
+    L.marker(seg[0], {interactive:false, icon:L.divIcon({className:'', iconSize:null, iconAnchor:[-6, 24], html:`<div class="pushpin">🚶 ${fmt0(p.len)} m · ${fmt0(p.max)}%</div>`})}).addTo(pushPinLayer);
   });
   const st = r.track[0], en = r.track[r.track.length-1];
   L.circleMarker([st[0],st[1]], {radius:7, color:'#fff', weight:2, fillColor:'#1f8a4c', fillOpacity:1}).bindTooltip('Start').addTo(hlLayer);
@@ -740,7 +740,7 @@ function drawProfile(){
     c.strokeStyle = 'rgba(176,24,42,.55)'; c.lineWidth = 1.2;
     for (let xx = x0 - 200; xx < x1 + 200; xx += 6){ c.beginPath(); c.moveTo(xx, by); c.lineTo(xx + 40, pad.t); c.stroke(); }
     c.restore();
-    c.font = '13px ' + css('--f-body'); c.textAlign = 'center'; c.fillStyle = '#b0182a'; c.fillText('🚶', (x0 + x1) / 2, pad.t + 28);
+    c.font = '13px ' + css('--f-body'); c.textAlign = 'center'; c.fillStyle = '#b0182a'; c.fillText('🚶', (x0 + x1) / 2, pad.t + 28); c.font = '700 9.5px ' + css('--f-mono'); c.fillText(Math.round(p.max) + '%', (x0 + x1) / 2, pad.t + 40);
   });
   c.textAlign = 'left';
   // emelkedők sávja a profil tetején
@@ -824,7 +824,7 @@ function climbsHTML(r){
       <div class="ct"><span class="cnum">${c.n}</span><b>${fmt(c.s)}–${fmt(c.e)} km</b><span class="ctags">${c.why.map(w => `<span class="ctag">${WHY[w]}</span>`).join('')}</span></div>
       ${facts(c)}${pushIn(r, c)}<canvas data-cv="${c.n}"></canvas></div>`).join('')}
     ${other.length ? `<div style="margin-top:6px">${other.map(c => `<div class="crow" data-cl="${c.n}"><span class="cnum">${c.n}</span><span>${fmt(c.s)}–${fmt(c.e)} km</span><span class="m">${fmt(c.len)} km · +${fmt0(c.gain)} m · ${fmt(c.avg)}% (max ${fmt0(c.max)}%)</span></div>`).join('')}</div>` : ''}
-    <p class="cpnote">Nehéz emelkedő: legalább 250 m szint („hosszú”) és/vagy 8% feletti átlag legalább 50 m szinttel („meredek”). Max: legmeredekebb 300 m. 🚶 Tolós: aszfalton 16%, murván/földúton 13% feletti emelkedő (250 m-es átlag). Kattints egy emelkedőre: kiemeli a térképen és a profilon. A magasság SRTM-ből becsült.</p>`;
+    <p class="cpnote">Nehéz emelkedő: legalább 250 m szint („hosszú”) és/vagy 8% feletti átlag legalább 50 m szinttel („meredek”). A diagram alatti sáv a burkolat: <span style="color:var(--s-asphalt)">■</span> aszfalt, <span style="color:var(--s-hard)">■</span> kemény murva, <span style="color:var(--s-loose)">■</span> laza/erdei, <span style="color:var(--s-trail)">■</span> ösvény. Max: legmeredekebb 300 m. 🚶 Tolós: aszfalton 16%, murván/földúton 13% feletti emelkedő (250 m-es átlag). Kattints egy emelkedőre: kiemeli a térképen és a profilon. A magasság SRTM-ből becsült.</p>`;
 }
 // emelkedő szakaszokra bontása (a kis profil és a térkép ugyanezt használja)
 function climbSegs(c){
@@ -843,7 +843,7 @@ function drawClimb(cv, c){
   const dpr = devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight; if (!W) return;
   cv.width = W*dpr; cv.height = H*dpr; const g = cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0);
   const pr = c.prof, n = pr.length, Lm = c.len*1000;
-  const pad = {l:34, r:8, t:16, b:18};
+  const pad = {l:34, r:8, t:16, b:30};
   const zmin = Math.floor((c.bot - 10)/20)*20, zmax = Math.ceil((c.top + 10)/20)*20;
   const X = m => pad.l + m/Lm*(W-pad.l-pad.r), Y = z => pad.t + (1-(z-zmin)/(zmax-zmin))*(H-pad.t-pad.b);
   g.font = '500 9.5px ' + css('--f-mono');
@@ -857,9 +857,15 @@ function drawClimb(cv, c){
     const x0 = X(Math.max(0, (p.s - c.s) * 1000)), x1 = X(Math.min(Lm, (p.e - c.s) * 1000));
     g.save(); g.beginPath(); g.rect(x0, pad.t, x1 - x0, H - pad.t - pad.b); g.clip(); g.strokeStyle = 'rgba(176,24,42,.6)'; g.lineWidth = 1.2;
     for (let xx = x0 - 200; xx < x1 + 200; xx += 6){ g.beginPath(); g.moveTo(xx, H - pad.b); g.lineTo(xx + 40, pad.t); g.stroke(); }
-    g.restore(); g.textAlign = 'center'; g.font = '12px ' + css('--f-body'); g.fillStyle = '#b0182a'; g.fillText('🚶', (x0 + x1) / 2, pad.t + 12); g.font = '500 9.5px ' + css('--f-mono');
+    g.restore(); g.textAlign = 'center'; g.font = '12px ' + css('--f-body'); g.fillStyle = '#b0182a'; g.fillText('🚶', (x0 + x1) / 2, pad.t + 12); g.font = '700 9.5px ' + css('--f-mono'); g.fillText(Math.round(p.max) + '%', (x0 + x1) / 2, pad.t + 24); g.font = '500 9.5px ' + css('--f-mono');
   });
   g.strokeStyle = css('--ink'); g.lineWidth = 1.2; g.beginPath(); pr.forEach((z,i) => { const x = X(Math.min(Lm, i*100)); i ? g.lineTo(x, Y(z)) : g.moveTo(x, Y(z)); }); g.stroke();
+  // burkolati sáv a diagram alatt
+  const sy = H - pad.b + 3;
+  (sel ? sel.surfBands : []).forEach(([a, b, k]) => {
+    const s0 = Math.max(a, c.s), s1 = Math.min(b, c.e); if (s1 <= s0) return;
+    g.fillStyle = css(SURF.find(x => x[0] === k)[2]); g.fillRect(X((s0 - c.s) * 1000), sy, Math.max(1, X((s1 - c.s) * 1000) - X((s0 - c.s) * 1000)), 7);
+  });
   g.fillStyle = css('--ink-3'); g.textAlign = 'left'; g.fillText(c.bot + ' m', 2, Y(c.bot)); g.fillText(c.top + ' m', 2, Y(c.top) + 4);
   g.textAlign = 'center'; const step = Lm > 8000 ? 2000 : Lm > 3000 ? 1000 : 500;
   for (let m = 0; m <= Lm; m += step) if (X(m) < W - 26) g.fillText(fmt(m/1000, m % 1000 ? 1 : 0), X(m), H - 4);
@@ -903,7 +909,7 @@ function showClimb(r, n, zoom){
     r.pushes.filter(p => p.e > c.s && p.s < c.e).forEach(p => {
       const seg = r.track.filter(q => q[3] >= Math.max(p.s, c.s) && q[3] <= Math.min(p.e, c.e)).map(q => [q[0], q[1]]);
       if (seg.length > 1){ L.polyline(seg, {color:'#b0182a', weight:4, dashArray:'4 6', opacity:1, interactive:false}).addTo(climbLayer);
-        L.marker(seg[Math.floor(seg.length/2)], {interactive:false, icon:L.divIcon({className:'', iconSize:null, iconAnchor:[24, -6], html:`<div class="pushpin" title="tolós ${fmt0(p.len)} m">🚶</div>`})}).addTo(climbLayer); }
+        L.marker(seg[Math.floor(seg.length/2)], {interactive:false, icon:L.divIcon({className:'', iconSize:null, iconAnchor:[24, -6], html:`<div class="pushpin" title="tolós ${fmt0(p.len)} m">🚶 ${fmt0(p.max)}%</div>`})}).addTo(climbLayer); }
     });
     L.marker(pts[0], {interactive:false, icon:L.divIcon({className:'', iconSize:null, iconAnchor:[-8, 26], html:`<div class="seglbl start">▲${n} start · ${fmt0(c.bot)} m · színes szakaszok: ${(() => { const L = c.len*1000; return L > 6000 ? '1 km' : L > 2500 ? '500 m' : '200 m'; })()}</div>`})}).addTo(climbLayer);
     updateSegLabels();
