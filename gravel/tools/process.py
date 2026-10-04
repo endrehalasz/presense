@@ -167,7 +167,7 @@ for R in ROUTES:
         k_ += 1
     if skipped: print('   kihagyott központ-kitérők:', skipped)
     wps = [w[:2] for w in vw]
-    steps, snapd = router.route(wps)
+    steps, snapd = router.route(wps, profile=R.get('profile', 'gravel'))
     if R.get('wps_back'):
         # visszaút könnyű profillal; az odaúton használt éleket kerüli
         used = set()

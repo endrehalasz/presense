@@ -26,10 +26,17 @@ def easy_cost(e):
     base=e['cost']-12.0*e.get('climb',0)
     f=1.0 if e['cat']=='asphalt' else 1.4
     return base*f+14.0*e.get('climb',0)
+# „főút-kerülő” profil: a fő- és mellékutak (primary/secondary) 3×/2,2× drágábbak – ahol van
+# párhuzamos bringaút/kerékpáros murvaút (pl. Tauernradweg), arra tereli az útvonalat
+def nomain_cost(e):
+    base=e['cost']-12.0*e.get('climb',0)
+    f={'primary':3.0,'trunk':4.0,'secondary':2.2}.get(e['cls'],1.0)
+    return base*f+12.0*e.get('climb',0)
 _A={'gravel':A}
+_COST={'easy':easy_cost,'nomain':nomain_cost}
 def matrix(profile):
     if profile not in _A:
-        we=np.array([easy_cost(E[i]) for i in idx])
+        we=np.array([_COST[profile](E[i]) for i in idx])
         _A[profile]=csr_matrix((np.r_[we,we],(np.r_[u[idx],v[idx]],np.r_[v[idx],u[idx]])),shape=(n,n))
     return _A[profile]
 def path(a,b,avoid=None,profile='gravel'):
