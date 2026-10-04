@@ -105,7 +105,7 @@ for e in E:
 # --- v2 költség (felhasználói szabályok, 2026-10-04):
 #  bringaút (cycleway vagy kerékpárnak kijelölt) a legjobb; kis forgalmú aszfalt majdnem olyan jó;
 #  jó murva (gravel) jó; ismeretlen burkolatú / földes erdei út és ösvény kerülendő;
-#  főút csak ha muszáj; tolós meredekség: aszfalton >12%, murván >10%.
+#  főút csak ha muszáj (de egyenes völgyi főút jobb, mint dombos kerülő); tolós: aszfalton >16%, murván >13%.
 def is_bikeway(e):
     return e['cls']=='cycleway' or e['acc']=='designated'
 def factor(e):
@@ -119,9 +119,9 @@ def factor(e):
         f = 1.05 if paved else 1.1 if surf=='gravel' else 2.0
     elif cls=='track':
         f = 0.95 if paved else 1.0 if surf=='gravel' else 1.8 if surf=='unpaved' else 4.0 if surf=='dirt' else 2.6
-    elif cls=='tertiary': f = 1.25
-    elif cls=='secondary': f = 2.0
-    elif cls=='primary': f = 2.8
+    elif cls=='tertiary': f = 1.1
+    elif cls=='secondary': f = 1.35
+    elif cls=='primary': f = 1.6     # völgyi főút jobb, mint egy dombos párhuzamos kerülő
     elif cls in ('path','footway','bridleway'):
         f = 1.8 if paved else 3.0 if surf=='gravel' else 25.0      # erdei ösvény: gyakorlatilag tiltott
     elif cls=='pedestrian': f = 2.5
@@ -130,12 +130,12 @@ def factor(e):
     if e['sub']=='parking_aisle': f*=2.0
     if e['acc']=='private': f*=3.0
     if e['acc']=='restricted': f*=3.0
-    lim = 12.0 if paved else 10.0
-    if e['mg']>lim: f*=6.0                       # tolós
-    elif e['mg']>lim-2: f*=1.4
+    lim = 16.0 if paved else 13.0                # tolós határ (2026-10-04, 2. visszajelzés)
+    if e['mg']>lim: f*=6.0
+    elif e['mg']>lim-3: f*=1.3
     return f
 for e in E:
     e['bikeway']=is_bikeway(e)
-    e['cost']=e['L']*factor(e)+4.0*e['climb']
+    e['cost']=e['L']*factor(e)+12.0*e['climb']   # felesleges szint drága: ne másszon párhuzamos kerülőkön
 pickle.dump(dict(nodes=ncoord,z=z,E=E),open('graph.pkl','wb'))
 print(len(ncoord),len(E))

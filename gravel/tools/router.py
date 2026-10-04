@@ -23,9 +23,9 @@ for i in idx:
     e=E[i]; EDGE[(e['u'],e['v'])]=(i,False); EDGE[(e['v'],e['u'])]=(i,True)
 # „könnyű” profil (visszautakhoz): ugyanaz a v2 költség, de a nem aszfaltos utak 1,4× drágábbak
 def easy_cost(e):
-    base=e['cost']-4.0*e.get('climb',0)
+    base=e['cost']-12.0*e.get('climb',0)
     f=1.0 if e['cat']=='asphalt' else 1.4
-    return base*f+6.0*e.get('climb',0)
+    return base*f+14.0*e.get('climb',0)
 _A={'gravel':A}
 def matrix(profile):
     if profile not in _A:

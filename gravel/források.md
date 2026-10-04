@@ -29,9 +29,10 @@ Elérhető volt viszont az **AWS S3** – így a nyílt adatokat innen szereztem
 
 - **Kijelölt bringaút** (cycleway vagy kerékpárnak kijelölt út, aszfalt vagy döngölt murva) a legjobb: 0,60–0,72× költség; kis kerülővel is ezt választja.
 - **Kis forgalmú szilárd út** (lakó-, mellék-, mezőgazdasági aszfaltút): 0,95×. **Jó murva** (kifejezetten „gravel” jelölésű): 1,0×.
-- **Főút** csak ha muszáj (harmadrendű 1,25×, másodrendű 2,0×, elsőrendű 2,8×); kerékpárral tiltott utat soha.
+- **Főút** csak ha muszáj (harmadrendű 1,1×, másodrendű 1,35×, elsőrendű 1,6×) – egyenes völgyi főút jobb, mint dombos párhuzamos kerülő; kerékpárral tiltott utat soha. Minden emelkedőméter 12 m útnak megfelelő költség.
 - **Bizonytalan erdei út** (burkolat nélküli/ismeretlen track) 2,6×, földút 4×; **erdei ösvény** 25× – gyakorlatilag kizárva.
-- **Tolós meredekség:** aszfalton 12%, murván 10% felett 6× büntetés. Meredekség 200 m-es simítással, 250 m-es ablakban – a 2026-10-04-i barometrikus túrán kalibrálva (a DEM 99%-os percentilise 8,6% a barométer 8,1%-ához képest).
+- **Tolós meredekség:** aszfalton 16%, murván/földúton 13% felett 6× büntetés. Meredekség 200 m-es simítással, 250 m-es ablakban – a 2026-10-04-i barometrikus túrán kalibrálva (a DEM 99%-os percentilise 8,6% a barométer 8,1%-ához képest).
+- **Párhuzamos kerülők ellen:** ellenőrző szkript minden útvonalon 500 m-enként összeveti a nyomvonalat a legrövidebb járható úttal (1,2–2,2× hosszabb + több emelkedő = gyanús); a talált eseteket egyenként átnéztük.
 - **Kitérők ellen:** zsákutca-kitérők (be és vissza ugyanott, < 1,5 km) levágva; település-útpont kihagyva, ha csak 0,3–3 km-es központ-kitérőt okozna; tó/kilátó/szurdok csak kiemelt pont, kivéve ha az útvonal lényege („via”).
 - **Tolós szakaszok** a magassági profilon, a ClimbPro-kártyákon és a térképen jelölve (🚶).
 
@@ -84,7 +85,7 @@ A GPX- és KML-fájlok az OSM-adatbázisból származtatott művek: **ODbL 1.0**
 1. `fetch_overture.py` – Overture parquet-fájlok letöltése a bbox-ra (12,40–13,45 K, 47,45–47,98 É), sorcsoport-statisztika alapú szűréssel.
 2. `build_graph.py` – az OSM-szegmensek csomópontoknál feldarabolva, egybeeső végpontok összevonva; gravel-költség: kerékpárral tiltott utak kizárva, murvás erdei út / kerékpárút kedvezményes, főút és ösvény büntetett, emelkedés-büntetés (SRTM).
 3. `routes_def.py` – útpontok, leírások, értékelések, indulási módok, októberi figyelmeztetések (Overture-névjegyzékkel ellenőrzött koordináták).
-4. `process.py` – útvonaltervezés (Dijkstra; visszautakhoz külön „könnyű” profil: kerékpárút és kis forgalmú aszfalt előnyben, murva, főút és emelkedő büntetve), 20 m-es újramintavételezés, SRTM-magasság, 200 m-es simítás, szint 4 m-es küszöbbel, emelkedők ClimbPro-szerű felismerése (helyi minimumtól csúcsig, ≤15 m vagy a nyereség 10%-ának megfelelő visszaeséssel; min. 30 m szint, 400 m hossz, 3% átlag; „nehéz”: ≥250 m szint vagy ≥8% átlag legalább 50 m szinttel; max meredekség 300 m-en), legmeredekebb 500 m, burkolat-megoszlás, Douglas–Peucker 10 m, GPX/KML/`data.js` export.
+4. `process.py` – útvonaltervezés (Dijkstra; visszautakhoz külön „könnyű” profil: kerékpárút és kis forgalmú aszfalt előnyben, murva, főút és emelkedő büntetve), 20 m-es újramintavételezés, SRTM-magasság, 200 m-es simítás, szint 4 m-es küszöbbel, emelkedők ClimbPro-szerű felismerése (helyi minimumtól csúcsig, ≤15 m vagy a nyereség 10%-ának megfelelő visszaeséssel; min. 30 m szint, 400 m hossz, 3% átlag; „nehéz”: ≥250 m szint vagy ≥8% átlag legalább 50 m szinttel; max meredekség 300 m-en; tolós: aszfalton >16%, murván >13%), legmeredekebb 500 m, burkolat-megoszlás, Douglas–Peucker 10 m, GPX/KML/`data.js` export.
 5. `basemap.py` – offline domborzatárnyékolás (Web Mercator) + vektorrétegek (`basemap.js`).
 
 Burkolat-kategóriák: *aszfalt* = paved/paving_stones; *kemény murva* = gravel, ill. burkolatlan erdészeti/mező út (`track`/`service`/`unclassified` + unpaved vagy ismeretlen); *laza murva / erdei* = dirt/ground; *ösvény* = path/footway/bridleway burkolat nélkül. Az OSM-ben ismeretlen burkolatú `track` utakat kemény murvának becsültük.

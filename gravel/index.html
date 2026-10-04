@@ -341,8 +341,8 @@ input[type=range]{width:100%;accent-color:var(--glow)}
 </div></div>
 
 <script src="lib/leaflet/leaflet.js"></script>
-<script src="data.js?v=20261004-3"></script>
-<script src="basemap.js?v=20261004-3"></script>
+<script src="data.js?v=20261004-4"></script>
+<script src="basemap.js?v=20261004-4"></script>
 <script>
 (function(){
 'use strict';
@@ -523,7 +523,7 @@ function apply(){
         <span class="badge gen" title="Saját gravel-routerrel, OSM-utakon generálva">generált nyomvonal</span>
         <span class="badge" title="Indulási módok">${startIcons(r)}</span>
         ${r.climbs.length ? `<span class="badge" title="Emelkedők (nehéz: 250+ m szint vagy 8%+ átlag)" style="${r.hardClimbs?'color:var(--hard);border-color:color-mix(in srgb,var(--hard) 45%,var(--line))':''}">⛰ ${r.climbs.length} emelkedő${r.hardClimbs?` · ${r.hardClimbs} nehéz`:''}</span>` : ''}
-        ${r.pushes.length ? `<span class="pushtag" title="Tolós szakasz: aszfalton 12%, murván 10% feletti emelkedő">🚶 ${fmt(r.pushes.reduce((a,p)=>a+p.len,0)/1000)} km tolós</span>` : ''}
+        ${r.pushes.length ? `<span class="pushtag" title="Tolós szakasz: aszfalton 16%, murván/földúton 13% feletti emelkedő">🚶 ${fmt(r.pushes.reduce((a,p)=>a+p.len,0)/1000)} km tolós</span>` : ''}
         ${safe(() => wxBadge(r))}
       </div>
       <div class="meta"><span>${fmt(r.km)} km</span><span>↑ ${fmt0(r.up)} m</span><span>⏱ ${hTime(r.timeH)}</span><span>▲ ${fmt0(r.maxEle)} m</span><span>murva ${fmt0(r.gravel)}%</span></div>
@@ -605,7 +605,7 @@ function renderDetail(r){
       <div class="stat"><small>Szint fel / le</small><b>${fmt0(r.up)}<span>m</span></b><em>le: ${fmt0(r.down)} m</em></div>
       <div class="stat"><small>Becsült idő</small><b>${hTime(r.timeH)}<span>óra</span></b><em>pihenő nélkül</em></div>
       <div class="stat"><small>Max magasság</small><b>${fmt0(r.maxEle)}<span>m</span></b><em>min: ${fmt0(r.minEle)} m</em></div>
-      <div class="stat"><small>Murva / földút</small><b>${fmt0(r.gravel)}<span>%</span></b></div>
+      <div class="stat"><small>Murva / földút</small><b>${fmt0(r.gravel)}<span>%</span></b><em>${fmt(r.km * r.gravel / 100)} km</em></div>
       <div class="stat"><small>Szállodától</small><b>${fmt(r.hotelKm)}<span>km</span></b><em>${r.fromHotel?'szállodából indítható':'a start távolsága'}</em></div>
     </div>
     ${r.review ? `<h4>Útviszonyok</h4><div class="slegend"><span>🚲 bringaút <b>${fmt(r.review.bikeKm)} km</b></span><span>🛣 főút <b>${fmt(r.review.mainKm)} km</b></span><span>🌲 bizonytalan erdei/földút <b>${fmt(r.review.badTrackKm)} km</b></span><span>➖ sík (&lt;2%) <b>${r.review.flatPct}%</b></span>${r.pushes.length ? `<span style="color:#b0182a">🚶 tolós <b>${fmt(r.review.pushM/1000)} km</b> (${r.pushes.length} szakasz)</span>` : '<span>🚶 tolós szakasz nincs</span>'}</div>
@@ -824,7 +824,7 @@ function climbsHTML(r){
       <div class="ct"><span class="cnum">${c.n}</span><b>${fmt(c.s)}–${fmt(c.e)} km</b><span class="ctags">${c.why.map(w => `<span class="ctag">${WHY[w]}</span>`).join('')}</span></div>
       ${facts(c)}${pushIn(r, c)}<canvas data-cv="${c.n}"></canvas></div>`).join('')}
     ${other.length ? `<div style="margin-top:6px">${other.map(c => `<div class="crow" data-cl="${c.n}"><span class="cnum">${c.n}</span><span>${fmt(c.s)}–${fmt(c.e)} km</span><span class="m">${fmt(c.len)} km · +${fmt0(c.gain)} m · ${fmt(c.avg)}% (max ${fmt0(c.max)}%)</span></div>`).join('')}</div>` : ''}
-    <p class="cpnote">Nehéz emelkedő: legalább 250 m szint („hosszú”) és/vagy 8% feletti átlag legalább 50 m szinttel („meredek”). Max: legmeredekebb 300 m. 🚶 Tolós: aszfalton 12%, murván 10% feletti emelkedő (250 m-es átlag). Kattints egy emelkedőre: kiemeli a térképen és a profilon. A magasság SRTM-ből becsült.</p>`;
+    <p class="cpnote">Nehéz emelkedő: legalább 250 m szint („hosszú”) és/vagy 8% feletti átlag legalább 50 m szinttel („meredek”). Max: legmeredekebb 300 m. 🚶 Tolós: aszfalton 16%, murván/földúton 13% feletti emelkedő (250 m-es átlag). Kattints egy emelkedőre: kiemeli a térképen és a profilon. A magasság SRTM-ből becsült.</p>`;
 }
 // emelkedő szakaszokra bontása (a kis profil és a térkép ugyanezt használja)
 function climbSegs(c){

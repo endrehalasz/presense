@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="Bad Reichenhall gravel – saját gravel-router (OSM/Overture + SRTM)" xmlns="http://www.topografix.com/GPX/1/1">
-<metadata><name>Salzach-ártér–Abtsdorfer See–Laufen</name><desc>GENERÁLT NYOMVONAL – Szállodából végig a Saalach-parti bringaúton Freilassingig, a torkolatnál (Saalachspitz) rá a Salzach gátján futó Tauernradwegre, az ártéri erdők mentén észak felé, fürdés helyett kávé az Abtsdorfer See partján, majd Laufen óvárosa – a Salzach-hurokban a híddal Oberndorf felé. Haza vonattal Freilassingon át.</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-04T16:53:24Z</time></metadata>
+<metadata><name>Salzach-ártér–Abtsdorfer See–Laufen</name><desc>GENERÁLT NYOMVONAL – Szállodából végig a Saalach-parti bringaúton Freilassingig, a torkolatnál (Saalachspitz) rá a Salzach gátján futó Tauernradwegre, az ártéri erdők mentén észak felé, fürdés helyett kávé az Abtsdorfer See partján, majd Laufen óvárosa – a Salzach-hurokban a híddal Oberndorf felé. Haza vonattal Freilassingon át.</desc><copyright author="OpenStreetMap contributors (via Overture Maps)"><license>https://opendatacommons.org/licenses/odbl/</license></copyright><time>2026-10-04T17:59:36Z</time></metadata>
 <wpt lat="47.7405" lon="12.8928"><name>Saalach-parti bringaút</name><type>view</type></wpt>
 <wpt lat="47.8046" lon="12.9676"><name>Saalach-parti bringaút (Ainring)</name><type>view</type></wpt>
 <wpt lat="47.8366" lon="12.9771"><name>Freilassing</name><type>town</type></wpt>
@@ -19,17 +19,18 @@
 <trkpt lat="47.730708" lon="12.887277"><ele>466.8</ele></trkpt>
 <trkpt lat="47.731702" lon="12.887899"><ele>465.8</ele></trkpt>
 <trkpt lat="47.732859" lon="12.888988"><ele>463.3</ele></trkpt>
-<trkpt lat="47.733919" lon="12.889805"><ele>464.0</ele></trkpt>
-<trkpt lat="47.735182" lon="12.890496"><ele>464.3</ele></trkpt>
-<trkpt lat="47.735913" lon="12.890981"><ele>460.5</ele></trkpt>
-<trkpt lat="47.736805" lon="12.892597"><ele>464.7</ele></trkpt>
-<trkpt lat="47.736845" lon="12.892688"><ele>464.9</ele></trkpt>
-<trkpt lat="47.737294" lon="12.893123"><ele>465.8</ele></trkpt>
-<trkpt lat="47.738557" lon="12.893727"><ele>465.9</ele></trkpt>
-<trkpt lat="47.739000" lon="12.892667"><ele>461.6</ele></trkpt>
-<trkpt lat="47.739380" lon="12.892474"><ele>461.7</ele></trkpt>
-<trkpt lat="47.739559" lon="12.892888"><ele>465.2</ele></trkpt>
-<trkpt lat="47.740206" lon="12.892743"><ele>464.0</ele></trkpt>
+<trkpt lat="47.733188" lon="12.889273"><ele>463.4</ele></trkpt>
+<trkpt lat="47.734547" lon="12.890214"><ele>463.9</ele></trkpt>
+<trkpt lat="47.735492" lon="12.890670"><ele>462.9</ele></trkpt>
+<trkpt lat="47.736228" lon="12.891388"><ele>461.0</ele></trkpt>
+<trkpt lat="47.736592" lon="12.890916"><ele>460.9</ele></trkpt>
+<trkpt lat="47.737193" lon="12.891704"><ele>461.2</ele></trkpt>
+<trkpt lat="47.737802" lon="12.890693"><ele>461.0</ele></trkpt>
+<trkpt lat="47.738920" lon="12.891835"><ele>460.0</ele></trkpt>
+<trkpt lat="47.739303" lon="12.892183"><ele>460.4</ele></trkpt>
+<trkpt lat="47.739530" lon="12.892872"><ele>465.0</ele></trkpt>
+<trkpt lat="47.740093" lon="12.892670"><ele>463.9</ele></trkpt>
+<trkpt lat="47.740374" lon="12.893023"><ele>465.0</ele></trkpt>
 <trkpt lat="47.740420" lon="12.893505"><ele>468.4</ele></trkpt>
 <trkpt lat="47.740871" lon="12.893655"><ele>462.9</ele></trkpt>
 <trkpt lat="47.741641" lon="12.895484"><ele>466.1</ele></trkpt>
@@ -332,10 +333,11 @@
 <trkpt lat="47.933097" lon="12.948354"><ele>407.4</ele></trkpt>
 <trkpt lat="47.933075" lon="12.948091"><ele>407.1</ele></trkpt>
 <trkpt lat="47.933266" lon="12.947306"><ele>404.8</ele></trkpt>
-<trkpt lat="47.934230" lon="12.946190"><ele>402.6</ele></trkpt>
-<trkpt lat="47.935600" lon="12.945403"><ele>402.2</ele></trkpt>
-<trkpt lat="47.936596" lon="12.944856"><ele>402.7</ele></trkpt>
-<trkpt lat="47.937804" lon="12.943651"><ele>401.1</ele></trkpt>
+<trkpt lat="47.934387" lon="12.946061"><ele>402.0</ele></trkpt>
+<trkpt lat="47.934424" lon="12.946031"><ele>402.0</ele></trkpt>
+<trkpt lat="47.935821" lon="12.945294"><ele>403.0</ele></trkpt>
+<trkpt lat="47.936552" lon="12.944970"><ele>402.6</ele></trkpt>
+<trkpt lat="47.937652" lon="12.943805"><ele>402.2</ele></trkpt>
 <trkpt lat="47.938709" lon="12.942788"><ele>401.4</ele></trkpt>
 <trkpt lat="47.939675" lon="12.942632"><ele>403.6</ele></trkpt>
 <trkpt lat="47.939684" lon="12.940536"><ele>401.9</ele></trkpt>
@@ -348,18 +350,15 @@
 <trkpt lat="47.938577" lon="12.933710"><ele>404.0</ele></trkpt>
 <trkpt lat="47.938299" lon="12.932998"><ele>404.1</ele></trkpt>
 <trkpt lat="47.938004" lon="12.931037"><ele>404.0</ele></trkpt>
-<trkpt lat="47.937849" lon="12.930119"><ele>406.8</ele></trkpt>
-<trkpt lat="47.937540" lon="12.929972"><ele>409.8</ele></trkpt>
+<trkpt lat="47.937892" lon="12.930182"><ele>406.1</ele></trkpt>
+<trkpt lat="47.937627" lon="12.929973"><ele>409.2</ele></trkpt>
 <trkpt lat="47.936851" lon="12.930149"><ele>413.3</ele></trkpt>
-<trkpt lat="47.935573" lon="12.929267"><ele>419.9</ele></trkpt>
-<trkpt lat="47.935033" lon="12.928909"><ele>420.0</ele></trkpt>
-<trkpt lat="47.935057" lon="12.928323"><ele>420.6</ele></trkpt>
-<trkpt lat="47.935358" lon="12.927649"><ele>420.7</ele></trkpt>
-<trkpt lat="47.934561" lon="12.926791"><ele>422.0</ele></trkpt>
-<trkpt lat="47.935183" lon="12.925467"><ele>423.3</ele></trkpt>
-<trkpt lat="47.934450" lon="12.924891"><ele>429.7</ele></trkpt>
-<trkpt lat="47.934278" lon="12.924445"><ele>432.6</ele></trkpt>
-<trkpt lat="47.934401" lon="12.923974"><ele>433.7</ele></trkpt>
+<trkpt lat="47.936915" lon="12.928015"><ele>417.9</ele></trkpt>
+<trkpt lat="47.936924" lon="12.927690"><ele>417.0</ele></trkpt>
+<trkpt lat="47.935836" lon="12.926325"><ele>419.2</ele></trkpt>
+<trkpt lat="47.934787" lon="12.925050"><ele>426.4</ele></trkpt>
+<trkpt lat="47.934324" lon="12.924625"><ele>431.5</ele></trkpt>
+<trkpt lat="47.934364" lon="12.924051"><ele>433.4</ele></trkpt>
 <trkpt lat="47.935072" lon="12.923027"><ele>437.3</ele></trkpt>
 <trkpt lat="47.934989" lon="12.922629"><ele>440.5</ele></trkpt>
 <trkpt lat="47.934619" lon="12.922275"><ele>440.9</ele></trkpt>

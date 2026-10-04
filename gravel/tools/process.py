@@ -190,13 +190,13 @@ for R in ROUTES:
     z = smooth(zr, d, 200.0)
     up, dn = ascent(z, 4.0)
     # --- tolós szakaszok: menetirányban felfelé; 200 m simítás + 250 m ablak (barométeren kalibrálva);
-    #     aszfalton >12%, murván/földúton >10%
+    #     aszfalton >16%, murván/földúton >13%
     z100 = smooth(zr, d, 200.0)
     gwin = np.zeros(len(d)); j = 0
     for a_ in range(len(d)):
         while j < len(d) - 1 and d[j] - d[a_] < 250: j += 1
         gwin[a_] = (z100[j] - z100[a_]) / max(1.0, d[j] - d[a_]) * 100
-    lim = np.array([12.0 if c == 'asphalt' else 10.0 for c in cats])
+    lim = np.array([16.0 if c == 'asphalt' else 13.0 for c in cats])
     pushm = gwin > lim
     pushes = []; a_ = None
     for k_ in range(len(d)):
